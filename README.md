@@ -1,12 +1,7 @@
-# calendar-planner
-
 ### FOR RUN 'SERVER'
 
-use in command line `cd server && go run ./server/cmd/main.go`
+linux x86_64 ---> `.bin/server-linux-amd64`
 
-### TODO
+linux arm ---> `.bin/server-linux-arm64`
 
-user routes
-orders routes
-car routes
-cash routes
+apple silicon ---> `.bin/server-darwin-arm64`
