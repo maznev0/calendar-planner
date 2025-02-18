@@ -1,4 +1,3 @@
-# Название бинарного файла
 BINARY_NAME=server
 BUILD_DIR=bin
 LDFLAGS=-ldflags="-s -w"
@@ -23,7 +22,7 @@ build-all:
 		echo "🔨 Building for $$GOOS/$$GOARCH..."; \
 		GOOS=$$GOOS GOARCH=$$GOARCH go build $(LDFLAGS) -o $$OUTPUT cmd/main.go; \
 	done
-	@echo "✅ All builds completed!"
+	@echo "All builds completed. Launch one of them."
 
 clean:
 	rm -rf $(BUILD_DIR)
