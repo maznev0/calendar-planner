@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -35,6 +36,10 @@ func GetConfig() *Config {
 		logger := logging.GetLogger()
 		logger.Info("read server config")
 
+		if err := godotenv.Load(); err != nil {
+			logger.Warn("No .env file found, using system environment variables")
+		}
+
 		instance = &Config{}
 		if err := cleanenv.ReadConfig("config.yml", instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
@@ -42,7 +47,7 @@ func GetConfig() *Config {
 			logger.Fatal(err)
 		}
 
-		if err := cleanenv.ReadEnv(&instance); err != nil {
+		if err := cleanenv.ReadEnv(instance); err != nil {
             logger.Fatal(err)
         }
 	})

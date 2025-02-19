@@ -21,6 +21,7 @@ func main() {
 	router := httprouter.New()
 
 	cfg := config.GetConfig()
+	logger.Print(cfg)
 
 	logger.Info("register user handler")
 	handler := user.NewHandler(logger)
@@ -56,7 +57,7 @@ func start(router *httprouter.Router, cfg *config.Config) {
 		msg="listen unix /Users/vladnz/Library/Caches/go-build/b3/b38833e0b17c14108a216adfa9d197f9a74012e73b3118b5681e9bd2e93aca51-d/app.sock: 
 		bind: invalid argument" func="main.start()" file="main.go:60"
 		*/
-		
+
 	} else {
 		logger.Info("listen tcp")
 		listener, listenErr = net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
@@ -70,8 +71,8 @@ func start(router *httprouter.Router, cfg *config.Config) {
 
 	server := &http.Server{
 		Handler: router,
-		WriteTimeout: 10 * time.Second,
-		ReadTimeout: 10 * time.Second,
+		WriteTimeout: 5 * time.Second,
+		ReadTimeout: 5 * time.Second,
 	}
 
 	logger.Fatal(server.Serve(listener))
