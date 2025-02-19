@@ -7,8 +7,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE USERS (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(18) NOT NULL,
-    user_role VARCHAR(6) NOT NULL
-
+    user_role VARCHAR(6) NOT NULL,
+    telegram_id VARCHAR(10) UNIQUE NOT NULL
 );
 
 CREATE TABLE ORDERS (
@@ -16,26 +16,34 @@ CREATE TABLE ORDERS (
     order_date DATE,
     order_address VARCHAR(50) NOT NULL,
     phone_number VARCHAR(13) NOT NULL,
-    meters DECIMAL(5,2) NOT NULL,
+    meters DECIMAL(6,2) NOT NULL,
     price INT NOT NULL,
     driver_id UUID NOT NULL,
-    worker_id UUID NOT NULL,
     note TEXT,
     order_state VARCHAR(18) NOT NULL,
 
-    FOREIGN KEY (driver_id) REFERENCES USERS(id) ON DELETE CASCADE,
-    FOREIGN KEY (worker_id) REFERENCES USERS(id) ON DELETE CASCADE
+    FOREIGN KEY (driver_id) REFERENCES USERS(id) ON DELETE CASCADE
+);
 
+CREATE TABLE ORDER_WORKERS (
+    order_id UUID NOT NULL,
+    worker_id UUID NOT NULL,
+    worker_payment INT NOT NULL,
+    
+    PRIMARY KEY (order_id, worker_id),
+    FOREIGN KEY (order_id) REFERENCES ORDERS(id) ON DELETE CASCADE,
+    FOREIGN KEY (worker_id) REFERENCES USERS(id) ON DELETE CASCADE
 );
 
 CREATE TABLE PAYMENTS (
     order_id UUID PRIMARY KEY,
+    driver_id UUID NOT NULL,
     total_price INT NOT NULL,
-    worker_price INT NOT NULL,
     driver_price INT NOT NULL,
     other_price INT NOT NULL,
 
-    FOREIGN KEY (order_id) REFERENCES ORDERS(id) ON DELETE CASCADE
+    FOREIGN KEY (order_id) REFERENCES ORDERS(id) ON DELETE CASCADE,
+    FOREIGN KEY (driver_id) REFERENCES USERS(id) ON DELETE CASCADE
 );
 
 CREATE TABLE CARS (
