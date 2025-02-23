@@ -9,3 +9,11 @@ apple silicon ---> `.bin/server-darwin-arm64`
 ### FOR RUN 'CLIENT'
 
 npx expo start
+
+1. Stop()
+2. Docker with Postgres
+3. Connection Pool
+4. func Retry()
+5. Deploy DB
+6. Hosting
+7. Reading from .env and .yaml, check config.go
