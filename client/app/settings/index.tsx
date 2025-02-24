@@ -1,13 +1,32 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
-import { getWeek } from "../../utils/date";
+import { router } from "expo-router";
+import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 export default function Settings() {
   return (
     <View style={styles.container}>
-      <View style={styles.date}>
-        <Text style={styles.date_text}>Настройки</Text>
+      <View style={styles.item}>
+        <Image
+          style={styles.icon}
+          source={require("../../assets/icons/statistics.png")}
+        />
+        <Text style={styles.item_text}>Статистика</Text>
       </View>
-      <Text>Settings</Text>
+      <TouchableOpacity onPress={() => router.push("/users")}>
+        <View style={styles.item}>
+          <Image
+            style={styles.icon}
+            source={require("../../assets/icons/users.png")}
+          />
+          <Text style={styles.item_text}>Пользователи</Text>
+        </View>
+      </TouchableOpacity>
+      <View style={styles.item}>
+        <Image
+          style={styles.icon}
+          source={require("../../assets/icons/password.png")}
+        />
+        <Text style={styles.item_text}>Поменять пароль</Text>
+      </View>
     </View>
   );
 }
@@ -17,20 +36,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#3C3C3C",
     paddingHorizontal: 28,
+
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 52,
   },
-  date: {
-    borderBottomWidth: 1,
-    borderColor: "#fff",
-    opacity: 0.5,
-    paddingBottom: 9,
-    marginBottom: 15,
+  item: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 10,
   },
-  date_text: {
-    color: "#FFFFFF",
-    textAlign: "center",
+  icon: {},
+  item_text: {
     fontSize: 20,
-  },
-  list: {
-    height: "100%",
+    color: "#FFF",
+    fontWeight: 200,
   },
 });

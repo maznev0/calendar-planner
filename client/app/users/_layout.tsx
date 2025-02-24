@@ -27,7 +27,7 @@ export default function Layout() {
             </TouchableOpacity>
           </View>
           <View style={styles.date}>
-            <Text style={styles.date_text}>Настройки</Text>
+            <Text style={styles.date_text}>Пользователи</Text>
           </View>
         </View>
         <Stack screenOptions={{ headerShown: false }} />

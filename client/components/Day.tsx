@@ -9,7 +9,7 @@ interface Props {
 
 export default function Day({ weekday, day, orders }: Props) {
   return (
-    <TouchableOpacity onPress={() => router.push("/days/1")}>
+    <TouchableOpacity onPress={() => router.push("/week/1/day/3")}>
       <View style={styles.container}>
         <View style={styles.date}>
           <Text style={styles.weekday}>{weekday.toUpperCase()}</Text>

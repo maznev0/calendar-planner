@@ -14,7 +14,7 @@ export default function Layout() {
     <View style={styles.wrapper}>
       <StatusBar backgroundColor="#3C3C3C" style="light" />
       <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
+        <View>
           <View style={styles.navbar}>
             <TouchableOpacity onPress={() => router.push("/calendar")}>
               <Image
@@ -26,8 +26,8 @@ export default function Layout() {
               <Image source={require("../../assets/icons/menu.png")} />
             </TouchableOpacity>
           </View>
-          <View style={styles.date}>
-            <Text style={styles.date_text}>Настройки</Text>
+          <View style={styles.header}>
+            <Text style={styles.header_text}>{}</Text>
           </View>
         </View>
         <Stack screenOptions={{ headerShown: false }} />
@@ -41,27 +41,28 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     flex: 1,
-  },
-  container: {
-    flex: 1,
     backgroundColor: "#3C3C3C",
   },
-  header: {
-    paddingHorizontal: 20,
+  container: {
+    width: "100%",
+    flex: 1,
+    backgroundColor: "#3C3C3C",
   },
   navbar: {
     flexDirection: "row",
     justifyContent: "space-between",
+    backgroundColor: "inherit",
     paddingTop: 10,
+    paddingHorizontal: 28,
   },
   icon: {},
-  date: {
+  header: {
     borderBottomWidth: 1,
     borderColor: "#fff",
     opacity: 0.5,
     paddingBottom: 9,
   },
-  date_text: {
+  header_text: {
     color: "#FFFFFF",
     textAlign: "center",
     fontSize: 20,
