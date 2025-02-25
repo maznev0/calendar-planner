@@ -1,4 +1,4 @@
-package postgresql
+package database
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 // ! must be upgrade
-func NewPool(ctx context.Context, maxAttempts int, dbconf config.DBConfig) (pool *pgxpool.Pool,err error) {
+func NewPool(ctx context.Context, maxAttempts int, dbconf config.DBConfig) (pool *pgxpool.Pool, err error) {
 	logger := logging.GetLogger()
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s", dbconf.User, dbconf.Password, dbconf.Host, dbconf.Port, dbconf.Name, dbconf.SSLMode)
 

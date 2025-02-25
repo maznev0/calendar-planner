@@ -24,7 +24,7 @@ function OrderCard() {
       </View>
       <View style={styles.bottom}>
         <View style={styles.left}>
-          <Text style={styles.worker}>👷‍♂️ Игорь +2</Text>
+          <Text style={styles.worker}>👷‍♂️ Игорь, Петр</Text>
           <Text style={styles.driver}>
             <View style={styles.color} /> Александр
           </Text>
