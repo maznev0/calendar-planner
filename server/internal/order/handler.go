@@ -38,6 +38,7 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 	// Декодируем JSON
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		h.logger.Errorf("Invalid request: %v", w)
 		return
 	}
 
@@ -54,6 +55,7 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Order created successfully"))
+	h.logger.Info("Order created successfully")
 }
 
 func (h *handler) GetByDates(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

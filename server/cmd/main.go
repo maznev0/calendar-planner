@@ -11,6 +11,7 @@ import (
 
 	tgBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -20,6 +21,13 @@ func main() {
 
 	cfg := config.GetConfig()
 	logger.Print(cfg)
+
+	c := cors.New(cors.Options{
+        AllowedOrigins:   []string{"*"}, // Разрешаем все домены (можно указать конкретный)
+        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+        AllowedHeaders:   []string{"Content-Type"},
+        AllowCredentials: true,
+    })
 
 	// creating Conection Pool
 	pool, err := database.NewPool(context.Background(), 10, cfg.Database)
@@ -49,10 +57,12 @@ func main() {
 	handlerOrder := order.NewHandler(logger, serviceOrder)
 	handlerOrder.Register(router)
 
+	handler := c.Handler(router)
+
 	// * BOT
 	// go telegram.StartTelegramBot(bot, logger)
 	// *
-	server.Start(router, cfg)
+	server.Start(handler, cfg)
 }
 
 // func start(router *httprouter.Router, cfg *config.Config) {

@@ -5,7 +5,12 @@ import Text from "./Text";
 interface Props {
   placeholder: string;
   name: string;
-  type?: "default" | "phone-pad" | "numeric";
+  type?:
+    | "default"
+    | "phone-pad"
+    | "numeric"
+    | "decimal-pad"
+    | "numbers-and-punctuation";
   defaultValue?: string;
   value: string;
   onChangeText: (text: string) => void;

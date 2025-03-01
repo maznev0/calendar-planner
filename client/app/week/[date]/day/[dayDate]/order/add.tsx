@@ -23,6 +23,7 @@ const Add = () => {
     // worker: "",
     driver_id: "a7d1027a-cb57-4e79-b80f-12f90e78a96d",
     note: "",
+    order_state: "",
   });
 
   const handleChangeText = (field: string, value: string) => {
@@ -42,16 +43,35 @@ const Add = () => {
     // setError(null);
 
     try {
-      const response = await axios.post("http://localhost:10000/orders", {
-        order,
-        workers: [],
-      });
+      const response = await axios.post(
+        "http://100.78.78.230:10000/orders",
+        {
+          order: {
+            ...order,
+            price: Number(order.price),
+            meters: parseFloat(order.meters),
+            order_date: new Date().toISOString().split("T")[0],
+          },
+          workers: [
+            {
+              worker_id: "58749034-f09e-48d2-b82e-424d1d31af0b",
+              worker_payment: 0,
+            },
+          ],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
 
       console.log("Ответ сервера:", response.data);
 
       Alert.alert("Успех", "Данные успешно отправлены!");
-    } catch (err) {
-      Alert.alert("Ошибка", "Не удалось отправить данные");
+    } catch (err: any) {
+      Alert.alert("Ошибка", err.message);
     }
   };
   return (
@@ -74,7 +94,7 @@ const Add = () => {
             <Input
               placeholder="Площадь"
               name="М²"
-              type="numeric"
+              type="numbers-and-punctuation"
               value={order.meters}
               onChangeText={(e) => handleChangeText("meters", e)}
             />
