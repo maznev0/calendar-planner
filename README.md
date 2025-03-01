@@ -17,3 +17,14 @@ npx expo start
 5. Deploy DB
 6. Hosting
 7. Reading from .env and .yaml, check config.go
+
+orders:
+
+1. GetByDates(ctx context.Context, dates []string) []Date, error
+
+   type Date struct {
+   date string
+   orders_quantity int
+   }
+
+2. GetByDate(ctx context.Context, date string) []Orders, []Workers, error

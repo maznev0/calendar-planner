@@ -17,16 +17,22 @@ type Config struct {
 	} `yaml:"listen"`
 
 	Database DBConfig `yaml:"database"`
+
+	Telegram TGConfig 
 }
 
 type DBConfig struct {
 	Host     string `yaml:"host" env-default:"localhost"`
 	Port     string `yaml:"port" env-default:"5432"`
-	Name     string `yaml:"name" env-default:"cpdb"`
+	Name     string `yaml:"name" env-default:"postgres"`
 	SSLMode  string `yaml:"sslmode" env-default:"disable"`
 	User     string `env:"DB_USER"`     
 	Password string `env:"DB_PASSWORD"`
 } 
+
+type TGConfig struct {
+	Token string `env:"TG_BOT_TOKEN"`
+}
 
 var instance *Config
 var once sync.Once

@@ -6,8 +6,9 @@ type Service interface {
 	Create(ctx context.Context, user *User) error
 	GetAll(ctx context.Context) (users []User, err error)
 	GetById(ctx context.Context, id string) (User, error)
-	Update(ctx context.Context, user User) error
-	Delete(ctx context.Context, id string) error
+	GetWorkersAndDrivers(ctx context.Context) ([]User, error)
+	//Update(ctx context.Context, user User) error
+	//Delete(ctx context.Context, id string) error
 }
 
 type service struct {
@@ -26,14 +27,18 @@ func (s *service) GetAll(ctx context.Context) ([]User, error) {
 	return s.repo.GetAll(ctx)
 }
 
+func (s *service) GetWorkersAndDrivers(ctx context.Context) ([]User, error) {
+	return s.repo.GetWorkersAndDrivers(ctx)
+}
+
 func (s *service) GetById(ctx context.Context, id string) (User, error) {
 	return s.repo.GetById(ctx, id)
 }
 
-func (s *service) Update(ctx context.Context, user User) error {
-	return s.repo.Update(ctx, user)
-}
+// func (s *service) Update(ctx context.Context, user User) error {
+// 	return s.repo.Update(ctx, user)
+// }
 
-func (s *service) Delete(ctx context.Context, id string) error {
-	return s.repo.Delete(ctx, id)
-}
+// func (s *service) Delete(ctx context.Context, id string) error {
+// 	return s.repo.Delete(ctx, id)
+// }

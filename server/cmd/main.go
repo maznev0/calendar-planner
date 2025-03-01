@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"net"
-	"net/http"
 	"server/internal/config"
+	"server/internal/order"
 	"server/internal/user"
 	"server/pkg/database"
 	"server/pkg/logging"
-	"time"
+	"server/pkg/server"
 
+	tgBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -22,38 +21,56 @@ func main() {
 	cfg := config.GetConfig()
 	logger.Print(cfg)
 
-	pool, err := database.NewPool(context.TODO(), 10, cfg.Database)
+	// creating Conection Pool
+	pool, err := database.NewPool(context.Background(), 10, cfg.Database)
 	if err != nil {
 		logger.Fatalf("%v", err)
 	}
+	//
 
+	// initializing Bot
+	bot, err := tgBotApi.NewBotAPI(cfg.Telegram.Token)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	bot.Debug = true
+	// 
 
 	logger.Info("register user handler")
-	repo := user.NewRepository(pool, logger)
-	service := user.NewService(repo)	
-	handler := user.NewHandler(logger, service)
-	handler.Register(router)
+	repoUser := user.NewRepository(pool, logger)
+	serviceUser := user.NewService(repoUser)	
+	handlerUser := user.NewHandler(logger, serviceUser)
+	handlerUser.Register(router)
 
-	start(router, cfg)
+	logger.Info("register order handler")
+	repoOrder := order.NewRepository(pool, logger)
+	serviceOrder := order.NewService(repoOrder)
+	handlerOrder := order.NewHandler(logger, serviceOrder)
+	handlerOrder.Register(router)
+
+	// * BOT
+	// go telegram.StartTelegramBot(bot, logger)
+	// *
+	server.Start(router, cfg)
 }
 
-// * Start -> server/server.go ?
-func start(router *httprouter.Router, cfg *config.Config) {
-	logger := logging.GetLogger()
-	logger.Info("start server")
+// func start(router *httprouter.Router, cfg *config.Config) {
+// 	logger := logging.GetLogger()
+// 	logger.Info("start server")
 
-	listener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
-	logger.Infof("server is listening port %s:%s", cfg.Listen.BindIP, cfg.Listen.Port)
+// 	listener, listenErr := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Listen.BindIP, cfg.Listen.Port))
+// 	logger.Infof("server is listening port %s:%s", cfg.Listen.BindIP, cfg.Listen.Port)
 
-	if listenErr != nil {
-		logger.Fatal(listenErr)
-	}
+// 	if listenErr != nil {
+// 		logger.Fatal(listenErr)
+// 	}
 
-	server := &http.Server{
-		Handler: router,
-		WriteTimeout: 5 * time.Second,
-		ReadTimeout: 5 * time.Second,
-	}
+// 	server := &http.Server{
+// 		Handler: router,
+// 		WriteTimeout: 5 * time.Second,
+// 		ReadTimeout: 5 * time.Second,
+// 	}
 
-	logger.Fatal(server.Serve(listener))
-}
+// 	logger.Fatal(server.Serve(listener))
+// }
