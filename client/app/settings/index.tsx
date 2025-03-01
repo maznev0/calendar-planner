@@ -1,5 +1,6 @@
 import { router } from "expo-router";
-import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {  View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import Text from "../../components/Text";
 
 export default function Settings() {
   return (

@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import React, { useState } from "react";
 import Calendar from "../../components/Calendar";
+import Text from "../../components/Text";
 
 const CalendarPage = () => {
   return (
@@ -43,5 +44,3 @@ const styles = StyleSheet.create({
 });
 
 export default CalendarPage;
-
-

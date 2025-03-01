@@ -1,12 +1,5 @@
 import { router, Stack } from "expo-router";
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { StyleSheet, View, TouchableOpacity, Image } from "react-native";
 
 export default function Layout() {
   return (

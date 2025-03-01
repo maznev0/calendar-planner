@@ -5,16 +5,15 @@ import Text from "./Text";
 interface Props {
   placeholder: string;
   name: string;
-  type?: "default" | "phone-pad" | "numeric";
   defaultValue?: string;
   value: string;
   onChangeText: (text: string) => void;
 }
 
-const Input: FunctionComponent<Props> = ({
+const InputArea: FunctionComponent<Props> = ({
   placeholder,
   name,
-  type = "default",
+
   value,
   onChangeText,
 }) => {
@@ -26,34 +25,35 @@ const Input: FunctionComponent<Props> = ({
       <TextInput
         value={value}
         onChangeText={(e) => onChangeText(e)}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
         placeholder={placeholder}
         placeholderTextColor="#A6A6A6"
-        keyboardType={type}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
         allowFontScaling={false}
+        multiline={true}
         style={styles.input}
+        textAlignVertical="top"
       />
     </View>
   );
 };
 
-export default Input;
+export default InputArea;
 
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 51,
+    height: 258,
 
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 10,
 
     borderWidth: 1,
     borderColor: "#252525",
     borderRadius: 20,
     backgroundColor: "#252525",
-
+    paddingVertical: 8,
     paddingHorizontal: 12,
   },
   input_name: {

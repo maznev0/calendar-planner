@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import {  View, StyleSheet, ScrollView } from "react-native";
 import DriverItem from "../../components/DriverItem";
 import WorkerItem from "../../components/WorkerItem";
 

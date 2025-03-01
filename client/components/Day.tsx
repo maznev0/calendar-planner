@@ -1,5 +1,7 @@
 import { router } from "expo-router";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import {  View, StyleSheet, TouchableOpacity } from "react-native";
+import Text from "./Text";
+
 
 interface Props {
   weekday: string;

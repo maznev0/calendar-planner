@@ -1,8 +1,9 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet,  View } from "react-native";
 import React, { useState } from "react";
 import { CalendarList } from "react-native-calendars";
 import CalendarDay from "./CalendarDay";
 import { LocaleConfig } from "react-native-calendars";
+import Text from "./Text";
 
 LocaleConfig.locales["ru"] = {
   monthNames: [

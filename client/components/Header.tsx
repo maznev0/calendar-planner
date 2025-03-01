@@ -1,5 +1,6 @@
 import { FunctionComponent } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View } from "react-native";
+import Text from "./Text";
 
 interface Props {
   children: string;

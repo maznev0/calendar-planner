@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, ScrollView } from "react-native";
+import {  View, StyleSheet, ScrollView } from "react-native";
 import OrderCard from "../../../../../components/OrderCard";
 import Header from "../../../../../components/Header";
 import Button from "../../../../../components/Button";

@@ -1,11 +1,6 @@
 import { router } from "expo-router";
-import {
-  Text,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Linking,
-} from "react-native";
+import { View, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import Text from "./Text";
 
 function OrderCard() {
   return (

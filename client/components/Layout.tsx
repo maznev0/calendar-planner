@@ -3,10 +3,11 @@ import {
   SafeAreaView,
   StyleSheet,
   View,
-  Text,
   TouchableOpacity,
   Image,
 } from "react-native";
+import Text from "./Text";
+
 import { StatusBar } from "expo-status-bar";
 
 export default function Layout() {
