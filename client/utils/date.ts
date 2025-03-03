@@ -5,15 +5,12 @@ const formatDate = (date: Date) => {
   });
 };
 
-export function getWeek() {
-  const today = new Date();
+export function getWeek(date: Date): string {
+  const startOfWeek = new Date(date);
+  startOfWeek.setDate(date.getDate() - date.getDay() + 1);
 
-  const dayOfWeek = today.getDay();
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Если сегодня воскресенье, отнимаем 6 дней
-
-  const sunday = new Date(today);
-  sunday.setDate(today.getDate() + (dayOfWeek === 0 ? 0 : 7 - dayOfWeek)); // Если сегодня воскресенье, воскресенье — это сегодня
-  return `${formatDate(monday)} — ${formatDate(sunday)}`;
+  return `${formatDate(startOfWeek)} - ${formatDate(endOfWeek)}`;
 }

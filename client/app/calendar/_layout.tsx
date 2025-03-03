@@ -8,10 +8,12 @@ export default function Layout() {
       <View style={styles.header}>
         <View style={styles.navbar}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Image
-              style={styles.icon}
-              source={require("../../assets/icons/back.png")}
-            />
+            <View style={{ width: 40, height: 40 }}>
+              <Image
+                style={styles.icon}
+                source={require("../../assets/icons/back.png")}
+              />
+            </View>
           </TouchableOpacity>
           <Text style={styles.year}>{new Date().getFullYear()}</Text>
         </View>

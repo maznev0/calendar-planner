@@ -1,6 +1,7 @@
-import { StyleSheet,  View } from "react-native";
+import { StyleSheet, TouchableWithoutFeedback, View } from "react-native";
 import React, { FC, memo } from "react";
 import Text from "./Text";
+import { useRouter } from "expo-router";
 
 interface Props {
   date: any;
@@ -12,24 +13,33 @@ const CalendarDay: FC<Props> = memo(
   ({ date, state, marking }) => {
     const isSunday = new Date(date.dateString).getDay() === 0;
 
+    const router = useRouter();
+    const handlePress = () => {
+      router.push(
+        `/week/${new Date(date.dateString).toISOString().split("T")[0]}`
+      );
+    };
+
     return (
-      <View style={styles.container}>
-        <Text
-          style={[
-            styles.dayText,
-            isSunday ? styles.sundayText : {},
-            // state === "disabled" ? styles.disabledDayText : {},
-            state === "today" ? styles.todayText : {},
-          ]}
-        >
-          {date?.day}
-        </Text>
-        <View style={styles.dots}>
-          {marking?.dots?.map((dot: any) => (
-            <View key={dot.key} style={styles.dot} />
-          ))}
+      <TouchableWithoutFeedback onPress={handlePress}>
+        <View style={styles.container}>
+          <Text
+            style={[
+              styles.dayText,
+              isSunday ? styles.sundayText : {},
+              // state === "disabled" ? styles.disabledDayText : {},
+              state === "today" ? styles.todayText : {},
+            ]}
+          >
+            {date?.day}
+          </Text>
+          <View style={styles.dots}>
+            {marking?.dots?.map((dot: any) => (
+              <View key={dot.key} style={styles.dot} />
+            ))}
+          </View>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     );
   },
   (prevProps, nextProps) => {

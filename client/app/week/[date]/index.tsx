@@ -1,13 +1,20 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import Day from "../../../components/Day";
 import Header from "../../../components/Header";
 import { getWeek } from "../../../utils/date";
 import Button from "../../../components/Button";
+import { useLocalSearchParams } from "expo-router";
 
 export default function Home() {
+  const { date } = useLocalSearchParams<{ date?: string }>();
+  const isValidDate =
+    date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(Date.parse(date));
+  const selectedDate = isValidDate ? new Date(date) : new Date();
+
+  // Alert.alert(`${date}`);
   return (
     <View style={styles.container}>
-      <Header>{getWeek()}</Header>
+      <Header>{getWeek(selectedDate)}</Header>
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
         <Day weekday={"пн"} day={"27 янв 2025"} orders={3} />
         <Day weekday={"вт"} day={"28 янв 2025"} orders={0} />

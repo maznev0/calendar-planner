@@ -1,4 +1,4 @@
-import { Image, StyleSheet,  View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import React, { useState } from "react";
 import { CalendarList } from "react-native-calendars";
 import CalendarDay from "./CalendarDay";
