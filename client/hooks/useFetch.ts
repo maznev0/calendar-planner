@@ -2,22 +2,22 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { Alert } from "react-native";
 
-const useFetch = (fetchFunction, params = {}) => {
-  const [data, setData] = useState(null);
+type FetchFunction<T> = () => Promise<T>;
+
+const useFetch = <T>(fetchFunction: FetchFunction<T>) => {
+  const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const response = fetchFunction(...params);
-      setData(response);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
+    (async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetchFunction();
+        setData(response);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, [fetchFunction]);
 
   return { data, isLoading };

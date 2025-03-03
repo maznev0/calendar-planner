@@ -14,11 +14,37 @@ import InputArea from "../../../../../../components/InputArea";
 import Button from "../../../../../../components/Button";
 import axios from "axios";
 import MultipleSelectInput from "../../../../../../components/MultipleSelectInput";
-import { addOrder, getDrivers } from "../../../../../../api/order";
+import { addOrder, getWorkersDrivers } from "../../../../../../api/order";
 import useFetch from "../../../../../../hooks/useFetch";
 
+interface IUser {
+  id: string;
+  username: string;
+}
+
+interface IWorkersIDrivers {
+  workers: IUser[];
+  drivers: IUser[];
+}
+
+interface Worker {
+  worker_id: string;
+  worker_payment: number;
+}
+
+interface Order {
+  order_address: string;
+  phone_number: string;
+  meters: string;
+  price: string;
+  workers: Worker[]; // Указываем, что это массив объектов Worker
+  driver_id: string;
+  note: string;
+  order_state: string;
+}
+
 const Add = () => {
-  const { data, isLoading } = useFetch(getDrivers);
+  const { data, isLoading } = useFetch<IWorkersIDrivers>(getWorkersDrivers);
 
   // data = {
   //   ...data,
@@ -31,13 +57,13 @@ const Add = () => {
   //   order_state: data.order_state || "",
   // };
 
-  const [order, setOrder] = useState({
+  const [order, setOrder] = useState<Order>({
     order_address: "",
     phone_number: "+375",
     meters: "",
     price: "",
-    worker: "",
-    driver_id: "a7d1027a-cb57-4e79-b80f-12f90e78a96d",
+    workers: [],
+    driver_id: "",
     note: "",
     order_state: "",
   });
@@ -46,47 +72,55 @@ const Add = () => {
     setOrder({ ...order, [field]: value });
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "http://100.78.78.230:10000/orders/some/path"
-        );
-        const data = response.data;
+  const handleAddWorker = (id: string) => {
+    setOrder((prev) => ({
+      ...prev,
+      workers: [...prev.workers, { worker_id: id, worker_payment: 0 }],
+    }));
+  };
 
-        setOrder({
-          ...order,
-          order_address: data.order_address || "",
-          phone_number: data.phone_number || "+375",
-          meters: data.meters || "",
-          price: data.price || "",
-          worker: data.worker || "",
-          note: data.note || "",
-          order_state: data.order_state || "",
-        });
-      } catch (err) {
-        Alert.alert("Ошибка", "Не удалось загрузить данные!");
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         "http://100.78.78.230:10000//users/workers&drivers"
+  //       );
+  //       const data = response.data;
 
-    fetchData();
-  }, []);
+  //       setOrder({
+  //         ...order,
+  //         order_address: data.order_address || "",
+  //         phone_number: data.phone_number || "+375",
+  //         meters: data.meters || "",
+  //         price: data.price || "",
+  //         worker: data.worker || "",
+  //         note: data.note || "",
+  //         order_state: data.order_state || "",
+  //       });
+  //     } catch (err) {
+  //       Alert.alert("Ошибка", "Не удалось загрузить данные!");
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, []);
 
   const handleSubmit = async () => {
     const fetchOrder = {
       order: {
-        ...order,
         price: Number(order.price),
         meters: parseFloat(order.meters),
         order_date: new Date().toISOString().split("T")[0],
+        order_address: order.order_address,
+        phone_number: order.phone_number,
+        driver_id: order.driver_id,
+        note: order.note,
       },
-      workers: [
-        {
-          worker_id: "58749034-f09e-48d2-b82e-424d1d31af0b",
-          worker_payment: 0,
-        },
-      ],
+      workers: order.workers,
     };
+    Alert.alert(order.driver_id);
+    // Alert.alert(order.)
+
     addOrder(fetchOrder);
   };
   return (
@@ -134,16 +168,18 @@ const Add = () => {
               onChangeText={(e) => handleChangeText("phone_number", e)}
             />
             <SelectInput
-              name="👷‍♂️"
-              placeholder="Рабочий"
-              value={order.worker}
-              onChange={(value) => handleChangeText("worker", value)}
-            />
-            <MultipleSelectInput
               name=""
               placeholder="Водитель"
+              data={data?.drivers || []}
+              value={order.worker}
+              onChange={(value) => handleChangeText("driver_id", value)}
+            />
+            <MultipleSelectInput
+              name="👷‍♂️"
+              placeholder="Рабочий"
+              data={data?.workers || []}
               value={order.driver_id}
-              onChange={(value) => handleChangeText("driver", value)}
+              onChange={(value) => handleAddWorker(value)}
             />
             <InputArea
               name="📌"

@@ -15,28 +15,29 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-const data = [
-  { key: 1, value: `Владос` },
-  { key: 2, value: "Александр" },
-  { key: 3, value: "Дмитрий" },
-  { key: 4, value: "Егор" },
-  { key: 5, value: "Даниил" },
-];
+// const data = [
+//   { key: 1, value: `Владос` },
+//   { key: 2, value: "Александр" },
+//   { key: 3, value: "Дмитрий" },
+//   { key: 4, value: "Егор" },
+//   { key: 5, value: "Даниил" },
+// ];
 
 const SelectInput: FunctionComponent<Props> = ({
   name,
   placeholder,
+  data,
   value,
   onChange,
 }) => {
   const formattedData = data.map((e) => ({
-    key: e.key,
-    value: `${name} ${e.value}`,
+    key: e.id,
+    value: `${name} ${e.username}`,
   }));
 
   return (
     <SelectList
-      setSelected={onChange}
+      setSelected={(e) => onChange(e.key)}
       data={formattedData}
       placeholder={name + placeholder}
       arrowicon={<></>}

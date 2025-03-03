@@ -4,7 +4,7 @@ import { Alert } from "react-native";
 export async function addOrder(order) {
   try {
     const response = await axios.post(
-      "http://100.78.78.230:10000/orders",
+      "http://100.78.76.123:10000/orders",
       order,
       {
         headers: {
@@ -22,10 +22,17 @@ export async function addOrder(order) {
   }
 }
 
-export async function getDrivers() {
+interface IUser {
+  user_role: "worker" | "driver";
+  id: string;
+  username: string;
+  telegram_id: string;
+}
+
+export async function getWorkersDrivers() {
   try {
-    const response = await axios.get(
-      "http://100.78.78.230:10000/orders/some/path",
+    const response = await axios.get<IUser[]>(
+      "http://100.78.76.123:10000//users/workers&drivers",
       {
         headers: {
           "Content-Type": "application/json",
@@ -33,7 +40,20 @@ export async function getDrivers() {
         },
       }
     );
-    return response.data;
+    const data = response.data;
+    const workers = data
+      .filter((e) => e.user_role === "worker")
+      .map((e) => ({
+        id: e.id,
+        username: e.username,
+      }));
+    const drivers = data
+      .filter((e) => e.user_role === "driver")
+      .map((e) => ({
+        id: e.id,
+        username: e.username,
+      }));
+    return { workers, drivers };
   } catch (err) {
     Alert.alert("Ошибка", "Не удалось загрузить данные!");
   }
