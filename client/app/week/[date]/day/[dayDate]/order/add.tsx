@@ -6,62 +6,28 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Header from "../../../../../../components/Header";
 import Input from "../../../../../../components/Input";
 import SelectInput from "../../../../../../components/SelectInput";
 import InputArea from "../../../../../../components/InputArea";
 import Button from "../../../../../../components/Button";
-import axios from "axios";
 import MultipleSelectInput from "../../../../../../components/MultipleSelectInput";
 import { addOrder, getWorkersDrivers } from "../../../../../../api/order";
 import useFetch from "../../../../../../hooks/useFetch";
-
-interface IUser {
-  id: string;
-  username: string;
-}
-
-interface IWorkersIDrivers {
-  workers: IUser[];
-  drivers: IUser[];
-}
-
-interface Worker {
-  worker_id: string;
-  worker_payment: number;
-}
-
-interface Order {
-  order_address: string;
-  phone_number: string;
-  meters: string;
-  price: string;
-  workers: Worker[]; // Указываем, что это массив объектов Worker
-  driver_id: string;
-  note: string;
-  order_state: string;
-}
+import { IUser } from "../../../../../../types/users";
+import { Order } from "../../../../../../types/order";
 
 const Add = () => {
-  const { data, isLoading } = useFetch<IWorkersIDrivers>(getWorkersDrivers);
-
-  // data = {
-  //   ...data,
-  //   order_address: data.order_address || "",
-  //   phone_number: data.phone_number || "+375",
-  //   meters: data.meters || "",
-  //   price: data.price || "",
-  //   worker: data.worker || "",
-  //   note: data.note || "",
-  //   order_state: data.order_state || "",
-  // };
+  const { data, isLoading } = useFetch<{ workers: IUser[]; drivers: IUser[] }>(
+    getWorkersDrivers
+  );
 
   const [order, setOrder] = useState<Order>({
     order_address: "",
     phone_number: "+375",
-    meters: "",
-    price: "",
+    meters: 0,
+    price: 0,
     workers: [],
     driver_id: "",
     note: "",
@@ -78,32 +44,6 @@ const Add = () => {
       workers: [...prev.workers, { worker_id: id, worker_payment: 0 }],
     }));
   };
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         "http://100.78.78.230:10000//users/workers&drivers"
-  //       );
-  //       const data = response.data;
-
-  //       setOrder({
-  //         ...order,
-  //         order_address: data.order_address || "",
-  //         phone_number: data.phone_number || "+375",
-  //         meters: data.meters || "",
-  //         price: data.price || "",
-  //         worker: data.worker || "",
-  //         note: data.note || "",
-  //         order_state: data.order_state || "",
-  //       });
-  //     } catch (err) {
-  //       Alert.alert("Ошибка", "Не удалось загрузить данные!");
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
 
   const handleSubmit = async () => {
     const fetchOrder = {
@@ -145,7 +85,7 @@ const Add = () => {
               name="М²"
               type="numbers-and-punctuation"
               value={order.meters}
-              onChangeText={(e) => handleChangeText("meters", e)}
+              onChangeText={(e) => handleChangeText("meters", parseFloat(e))}
             />
             <Input
               placeholder="Цена за квадрат"

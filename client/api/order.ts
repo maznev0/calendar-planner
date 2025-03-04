@@ -1,7 +1,9 @@
 import axios from "axios";
 import { Alert } from "react-native";
+import { IUser, IUserResponse } from "../types/users";
+import { IOrderFetch } from "../types/order";
 
-export async function addOrder(order) {
+export const addOrder = async (order: IOrderFetch) => {
   try {
     const response = await axios.post(
       "http://100.78.76.123:10000/orders",
@@ -14,24 +16,15 @@ export async function addOrder(order) {
       }
     );
 
-    console.log("Ответ сервера:", response.data);
-
     Alert.alert("Успех", "Заказ успешно отправлен!");
   } catch (err: any) {
     Alert.alert("Ошибка", err.message);
   }
-}
+};
 
-interface IUser {
-  user_role: "worker" | "driver";
-  id: string;
-  username: string;
-  telegram_id: string;
-}
-
-export async function getWorkersDrivers() {
+export const getWorkersDrivers = async () => {
   try {
-    const response = await axios.get<IUser[]>(
+    const response = await axios.get<IUserResponse[]>(
       "http://100.78.76.123:10000//users/workers&drivers",
       {
         headers: {
@@ -41,13 +34,13 @@ export async function getWorkersDrivers() {
       }
     );
     const data = response.data;
-    const workers = data
+    const workers: IUser[] = data
       .filter((e) => e.user_role === "worker")
       .map((e) => ({
         id: e.id,
         username: e.username,
       }));
-    const drivers = data
+    const drivers: IUser[] = data
       .filter((e) => e.user_role === "driver")
       .map((e) => ({
         id: e.id,
@@ -56,5 +49,6 @@ export async function getWorkersDrivers() {
     return { workers, drivers };
   } catch (err) {
     Alert.alert("Ошибка", "Не удалось загрузить данные!");
+    return { workers: [], drivers: [] };
   }
-}
+};
