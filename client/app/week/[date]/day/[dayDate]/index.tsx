@@ -1,22 +1,45 @@
-import {  View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import OrderCard from "../../../../../components/OrderCard";
 import Header from "../../../../../components/Header";
 import Button from "../../../../../components/Button";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import useFetch from "../../../../../hooks/useFetch";
+import { getOrderByDay } from "../../../../../api/order";
+import { OrderCardParams, OrderCardResponse } from "../../../../../types/order";
+import Text from "../../../../../components/Text";
 
 export default function Day() {
+  const { date, dayDate } = useLocalSearchParams<{
+    date: string;
+    dayDate: string;
+  }>();
+
+  const { data: orders, isLoading } = useFetch<
+    OrderCardResponse,
+    OrderCardParams
+  >(getOrderByDay, {
+    date: dayDate,
+  });
+
+  if (isLoading) {
+    return (
+      <View>
+        <Text>Loading ...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Header>Понедельник 27 января</Header>
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
+        {orders?.map((order) => (
+          <OrderCard key={order.id} order={order} />
+        ))}
       </ScrollView>
       <Button
         onPress={() => {
-          router.push("/week/1/day/1/order/add");
+          router.push(`/week/${date}/day/${dayDate}/order/add`);
         }}
       >
         Добавить

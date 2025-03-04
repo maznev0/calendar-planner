@@ -1,4 +1,5 @@
 import {
+  Alert,
   Pressable,
   StyleSheet,
   TouchableWithoutFeedback,
@@ -10,12 +11,14 @@ import {
   SelectList,
 } from "react-native-dropdown-select-list";
 import Text from "./Text";
+import { IUser } from "../types/users";
 
 interface Props {
   placeholder: string;
   name: string;
-  value: string;
-  onChange: (value: string) => void;
+  // value: string;
+  data: IUser[];
+  onChange: (value: any) => void;
 }
 
 // const data = [
@@ -30,7 +33,7 @@ const MultipleSelectInput: FunctionComponent<Props> = ({
   name,
   placeholder,
   data,
-  value,
+  // value,
   onChange,
 }) => {
   const formattedData = data.map((e) => ({
@@ -38,27 +41,48 @@ const MultipleSelectInput: FunctionComponent<Props> = ({
     value: `${name} ${e.username}`,
   }));
 
+  const [worker, setWorker] = useState([]);
+
   return (
-    <MultipleSelectList
-      setSelected={(e) => onChange(e.key)}
-      data={formattedData}
-      placeholder={name + placeholder}
-      arrowicon={<></>}
-      searchicon={<></>}
-      search={false}
-      boxStyles={styles.boxStyles}
-      inputStyles={{
-        ...styles.inputStyles,
-        color: value ? styles.selectedText.color : styles.placeholderText.color,
-      }}
-      dropdownStyles={styles.dropdownStyles}
-      dropdownItemStyles={styles.dropdownItemStyles}
-      dropdownTextStyles={styles.dropdownTextStyles}
-      badgeStyles={styles.badge_box}
-      checkBoxStyles={{ display: "none" }}
-      label="AAA"
-      labelStyles={{ display: "none" }}
-    />
+    <View>
+      <MultipleSelectList
+        save="key"
+        // setSelected={(selectedItems) => {
+        //   // selectedItems — это массив выбранных объектов { key, value }
+        //   // Преобразуем массив selectedItems в массив id (e.id)
+        //   // const selectedIds = selectedItems.map((item) => ({
+        //   //   worker_id: item.key,
+        //   //   worker_payment: 0,
+        //   // }));
+        //   // // Передаем массив id в onChange
+        //   Alert.alert(typeof selectedItems);
+        //   return onChange(selectedItems);
+        //   // Alert.alert(selectedItems);
+        // }}
+        setSelected={(a) => setWorker(a)}
+        onSelect={() => {
+          onChange(worker);
+        }}
+        data={formattedData}
+        placeholder={name + placeholder}
+        arrowicon={<></>}
+        searchicon={<></>}
+        search={false}
+        boxStyles={styles.boxStyles}
+        inputStyles={{
+          ...styles.inputStyles,
+          //color: value ? styles.selectedText.color : styles.placeholderText.color,
+        }}
+        dropdownStyles={styles.dropdownStyles}
+        dropdownItemStyles={styles.dropdownItemStyles}
+        dropdownTextStyles={styles.dropdownTextStyles}
+        badgeStyles={styles.badge_box}
+        checkBoxStyles={{ display: "none" }}
+        label="AAA"
+        labelStyles={{ display: "none" }}
+      />
+      {/* <Text>{worker.join(" ")}</Text> */}
+    </View>
   );
 };
 

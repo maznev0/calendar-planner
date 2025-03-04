@@ -1,17 +1,13 @@
-import {
-  Pressable,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
-import React, { FunctionComponent, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
+import React, { FunctionComponent } from "react";
 import { SelectList } from "react-native-dropdown-select-list";
-import Text from "./Text";
+import { IUser } from "../types/users";
 
 interface Props {
   placeholder: string;
   name: string;
   value: string;
+  data: IUser[];
   onChange: (value: string) => void;
 }
 
@@ -37,7 +33,11 @@ const SelectInput: FunctionComponent<Props> = ({
 
   return (
     <SelectList
-      setSelected={(e) => onChange(e.key)}
+      // setSelected={(e) => onChange(e.key)}
+      setSelected={(selectedItem) => {
+        onChange(String(selectedItem));
+      }}
+      save="key"
       data={formattedData}
       placeholder={name + placeholder}
       arrowicon={<></>}

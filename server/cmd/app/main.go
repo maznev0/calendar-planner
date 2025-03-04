@@ -9,7 +9,6 @@ import (
 	"server/pkg/logging"
 	"server/pkg/server"
 
-	tgBotApi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 )
@@ -23,7 +22,7 @@ func main() {
 	logger.Print(cfg)
 
 	c := cors.New(cors.Options{
-        AllowedOrigins:   []string{"*"}, // Разрешаем все домены (можно указать конкретный)
+        AllowedOrigins:   []string{"*"},
         AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
         AllowedHeaders:   []string{"Content-Type"},
         AllowCredentials: true,
@@ -37,12 +36,12 @@ func main() {
 	//
 
 	// initializing Bot
-	bot, err := tgBotApi.NewBotAPI(cfg.Telegram.Token)
-	if err != nil {
-		logger.Fatal(err)
-	}
+	// bot, err := tgBotApi.NewBotAPI(cfg.Telegram.Token)
+	// if err != nil {
+	// 	logger.Fatal(err)
+	// }
 
-	bot.Debug = true
+	// bot.Debug = true
 	// 
 
 	logger.Info("register user handler")
@@ -63,6 +62,20 @@ func main() {
 	// go telegram.StartTelegramBot(bot, logger)
 	// *
 	server.Start(handler, cfg)
+
+	// quit := make(chan os.Signal, 1)
+	// signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	// <-quit
+
+	// logrus.Print("TodoApp Shutting Down")
+
+	// if err := server.Stop(context.Background()); err != nil {
+	// 	logrus.Errorf("error occured on server shutting down: %s", err.Error())
+	// }
+
+	// if err := db.Close(); err != nil {
+	// 	logrus.Errorf("error occured on db connection close: %s", err.Error())
+	// }
 }
 
 // func start(router *httprouter.Router, cfg *config.Config) {

@@ -1,13 +1,13 @@
 package utils
 
 type Date struct {
-	date string
-	orders_quantity int
+	Date string `json: "date"`
+	OrdersQuantity int `json: "orders_quantity"`
 }
 
-func NewDate(date string, orders_quantity int) Date {
+func NewDate(date string, ordersQuantity int) Date {
 	return Date{
-		date: date,
-		orders_quantity: orders_quantity,
+		Date: date,
+		OrdersQuantity: ordersQuantity,
 	}
 }

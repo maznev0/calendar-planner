@@ -1,17 +1,17 @@
 import { router } from "expo-router";
-import {  View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import Text from "./Text";
-
 
 interface Props {
   weekday: string;
   day: string;
   orders: number;
+  onNavigate: () => void;
 }
 
-export default function Day({ weekday, day, orders }: Props) {
+export default function Day({ weekday, day, orders, onNavigate }: Props) {
   return (
-    <TouchableOpacity onPress={() => router.push("/week/1/day/3")}>
+    <TouchableOpacity onPress={onNavigate}>
       <View style={styles.container}>
         <View style={styles.date}>
           <Text style={styles.weekday}>{weekday.toUpperCase()}</Text>

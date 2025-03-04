@@ -11,6 +11,7 @@ type Repository interface {
 	Create(ctx context.Context, user *User) error
 	GetAll(ctx context.Context) ([]User, error)
 	GetWorkersAndDrivers(ctx context.Context) ([]User, error)
+	//GetDrivers(ctx context.Context) ([]User, error)
 	GetById(ctx context.Context, id string) (User, error)
 	//Update(ctx context.Context, user User) error
 	//Delete(ctx context.Context, id string) error

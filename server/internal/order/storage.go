@@ -5,19 +5,16 @@ import (
 	"server/internal/payments"
 	"server/internal/worker"
 	"server/pkg/logging"
-	"server/pkg/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Repository interface {
-	//Create(ctx context.Context, order *Order) error
-	//GetById(ctx context.Context, id string) (order Order, err error)
-	// GetAll(ctx context.Context) (orders []Order, err error)
-	GetByDates(ctx context.Context, dates []string) ([]utils.Date, error)
-	GetByDate(ctx context.Context, date string) ([]Order, []worker.Worker, error)
-	GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error)
 	Create(ctx context.Context, order *Order, workers []worker.Worker) error
+	//GetAll(ctx context.Context) (orders []Order, err error)
+	GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error)
+	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
+	GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error)
 	//Update(ctx context.Context, order Order) error
 	//Delete(ctx context.Context, id string) error
 }
@@ -41,7 +38,6 @@ func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers [
 	}
 	defer tx.Rollback(ctx)
 
-	// Создание заказа
 	queryOrder := `INSERT INTO ORDERS 
 		(order_date, order_address, phone_number, meters, price, driver_id, note, order_state) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
@@ -51,7 +47,6 @@ func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers [
 		return err
 	}
 
-	// Добавление рабочих к заказу
 	queryWorker := `INSERT INTO ORDER_WORKERS (order_id, worker_id, worker_payment) VALUES ($1, $2, $3)`
 	for _, w := range workers {
 		_, err := tx.Exec(ctx, queryWorker, orderId, w.WorkerId, w.WorkerPayment)
@@ -60,17 +55,107 @@ func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers [
 		}
 	}
 
-	// Фиксируем транзакцию
 	return tx.Commit(ctx)
 }
 
-func (r *PostgresRepository) GetByDates(ctx context.Context, dates []string) ([]utils.Date, error) {
-	return []utils.Date{}, nil
+func (r *PostgresRepository) GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error) {
+	query := `
+		SELECT TO_CHAR(order_date, 'YYYY-MM-DD') AS date, COUNT(*) AS orders_quantity 
+		FROM orders 
+		WHERE order_date BETWEEN $1 AND $2 
+		GROUP BY date 
+		ORDER BY date;
+	`
+
+	rows, err := r.db.Query(ctx, query, startDate, endDate)
+	if err != nil {
+		r.logger.Errorf("Failed to fetch orders by date range: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dates []Date
+	for rows.Next() {
+		var date Date
+		if err := rows.Scan(&date.Date, &date.OrdersQuantity); err != nil {
+			r.logger.Errorf("Failed to scan row: %v", err)
+			return nil, err
+		}
+		dates = append(dates, date)
+	}
+
+	if err := rows.Err(); err != nil {
+		r.logger.Errorf("Rows iteration error: %v", err)
+		return nil, err
+	}
+
+	return dates, nil
 }
 
-func (r *PostgresRepository) GetByDate(ctx context.Context, date string) ([]Order, []worker.Worker, error) {
-	return []Order{}, []worker.Worker{}, nil
+
+func (r *PostgresRepository) GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error) {
+	var orders []OrderWithDetails
+
+	query := `
+		SELECT o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, 
+			o.meters, o.price, u.username AS driver_name, o.order_state
+	    FROM ORDERS o
+		JOIN USERS u ON o.driver_id = u.id
+		WHERE o.order_date = $1`
+	rows, err := r.db.Query(ctx, query, date)
+	if err != nil {
+		r.logger.Errorf("Failed to get orders by date: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	orderMap := make(map[string]*OrderWithDetails)
+
+	for rows.Next() {
+		var o OrderWithDetails
+		if err := rows.Scan(&o.Id, &o.Date, &o.Address, &o.PhoneNumber, &o.Meters, &o.Price, &o.DriverName, &o.OrderState); err != nil {
+			r.logger.Errorf("Failed to scan order: %v", err)
+			return nil, err
+		}
+		orderMap[o.Id] = &o
+	}
+
+	workerQuery := `
+		SELECT ow.order_id, u.username 
+		FROM ORDER_WORKERS ow
+		JOIN USERS u ON ow.worker_id = u.id
+		WHERE ow.order_id = ANY($1)`
+
+	orderIDs := make([]string, 0, len(orderMap))
+	for id := range orderMap {
+		orderIDs = append(orderIDs, id)
+	}
+
+	workerRows, err := r.db.Query(ctx, workerQuery, orderIDs)
+	if err != nil {
+		r.logger.Errorf("Failed to get workers: %v", err)
+		return nil, err
+	}
+	defer workerRows.Close()
+
+	for workerRows.Next() {
+		var orderID, workerName string
+		if err := workerRows.Scan(&orderID, &workerName); err != nil {
+			r.logger.Errorf("Failed to scan worker: %v", err)
+			return nil, err
+		}
+		if order, exists := orderMap[orderID]; exists {
+			order.WorkerNames = append(order.WorkerNames, workerName)
+		}
+	}
+
+	for _, order := range orderMap {
+		orders = append(orders, *order)
+	}
+
+	return orders, nil
 }
+
 
 func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error) {
 	return Order{}, worker.Worker{}, payments.Payments{}, nil

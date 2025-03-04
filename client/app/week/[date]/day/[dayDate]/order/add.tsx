@@ -16,52 +16,68 @@ import MultipleSelectInput from "../../../../../../components/MultipleSelectInpu
 import { addOrder, getWorkersDrivers } from "../../../../../../api/order";
 import useFetch from "../../../../../../hooks/useFetch";
 import { IUser } from "../../../../../../types/users";
-import { Order } from "../../../../../../types/order";
+import { IOrderFetch, IOrderState } from "../../../../../../types/order";
+import { useLocalSearchParams } from "expo-router";
 
 const Add = () => {
-  const { data, isLoading } = useFetch<{ workers: IUser[]; drivers: IUser[] }>(
+  const { date, dayDate } = useLocalSearchParams<{
+    date: string;
+    dayDate: string;
+  }>();
+
+  const { data } = useFetch<{ workers: IUser[]; drivers: IUser[] }, null>(
     getWorkersDrivers
   );
 
-  const [order, setOrder] = useState<Order>({
+  const [order, setOrder] = useState<IOrderState>({
     order_address: "",
     phone_number: "+375",
-    meters: 0,
-    price: 0,
+    meters: "",
+    price: "",
     workers: [],
     driver_id: "",
     note: "",
-    order_state: "",
+    order_state: "Ожидает отправки",
   });
 
   const handleChangeText = (field: string, value: string) => {
     setOrder({ ...order, [field]: value });
   };
 
-  const handleAddWorker = (id: string) => {
-    setOrder((prev) => ({
-      ...prev,
-      workers: [...prev.workers, { worker_id: id, worker_payment: 0 }],
-    }));
+  const handleAddWorker = (value: string) => {
+    // setOrder((prev) => ({
+    //   ...prev,
+    //   workers: [...prev.workers, { worker_id: id, worker_payment: 0 }],
+    // }));
+
+    setOrder({ ...order, workers: [...order.workers, value] });
   };
 
+  // const handleSetWorkers = (workers) => {
+  //   setOrder({ ...order, workers: workers });
+  // };
+
   const handleSubmit = async () => {
-    const fetchOrder = {
+    const fetchOrder: IOrderFetch = {
       order: {
         price: Number(order.price),
         meters: parseFloat(order.meters),
-        order_date: new Date().toISOString().split("T")[0],
+        order_date: new Date(dayDate).toISOString().split("T")[0],
         order_address: order.order_address,
         phone_number: order.phone_number,
         driver_id: order.driver_id,
         note: order.note,
+        order_state: order.order_state,
       },
-      workers: order.workers,
+      workers: [
+        ...order.workers.map((id) => ({
+          worker_id: id,
+          worker_payment: 0,
+        })),
+      ],
     };
-    Alert.alert(order.driver_id);
-    // Alert.alert(order.)
-
-    addOrder(fetchOrder);
+    Alert.alert(String(Array.isArray(fetchOrder.workers)));
+    await addOrder(fetchOrder);
   };
   return (
     <TouchableWithoutFeedback
@@ -85,7 +101,7 @@ const Add = () => {
               name="М²"
               type="numbers-and-punctuation"
               value={order.meters}
-              onChangeText={(e) => handleChangeText("meters", parseFloat(e))}
+              onChangeText={(e) => handleChangeText("meters", e)}
             />
             <Input
               placeholder="Цена за квадрат"
@@ -111,15 +127,18 @@ const Add = () => {
               name=""
               placeholder="Водитель"
               data={data?.drivers || []}
-              value={order.worker}
-              onChange={(value) => handleChangeText("driver_id", value)}
+              value={order.driver_id}
+              onChange={(value) => {
+                handleChangeText("driver_id", value);
+              }}
             />
             <MultipleSelectInput
               name="👷‍♂️"
               placeholder="Рабочий"
               data={data?.workers || []}
-              value={order.driver_id}
-              onChange={(value) => handleAddWorker(value)}
+              // value={order.workers.length}
+              onChange={handleAddWorker}
+              // onChange={(ids) => handleSetWorkers(ids)}
             />
             <InputArea
               name="📌"

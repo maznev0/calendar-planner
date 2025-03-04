@@ -1,32 +1,90 @@
 import { router } from "expo-router";
 import { View, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import Text from "./Text";
+import { FC } from "react";
 
-function OrderCard() {
+// {
+//   "id": "ddf51bd1-17be-4122-bfce-78c43efa758b",
+//   "order_date": "2025-03-01",
+//   "order_address": "Левкова 6-32",
+//   "phone_number": "+375291234567",
+//   "meters": 50.5,
+//   "price": 40,
+//   "driver_id": "c200fb3f-468a-4700-ad64-5649efeb0158",
+//   "driver_name": "Михаил",
+//   "note": "Позвонить за час. Взять со склада 30 литров лака.",
+//   "order_state": "Ожидает назначения",
+//   "worker_names": [
+//       "Вадим",
+//       "Леонид"
+//   ]
+// }
+
+interface IOrder {
+  id: string;
+  order_date: string;
+  order_address: string;
+  phone_number: string;
+  meters: number;
+  price: number;
+  order_state: string;
+  driver_name: string;
+  worker_names: string[];
+}
+
+interface Props {
+  order: {
+    id: string;
+    order_date: string;
+    order_address: string;
+    phone_number: string;
+    meters: number;
+    price: number;
+    order_state: string;
+    driver_name: string;
+    worker_names: string[];
+  };
+}
+
+function OrderCard({ order }: Props) {
+  const {
+    id,
+    order_date,
+    order_address,
+    phone_number,
+    meters,
+    price,
+    order_state,
+    driver_name,
+    worker_names,
+  } = order;
+
   return (
     <TouchableOpacity
       onPress={() => router.push("/week/1/day/1/order/1")}
       style={styles.container}
     >
       <View style={styles.top}>
-        <Text style={styles.top_text}>📍 Левкова 6-24</Text>
+        <Text style={styles.top_text}>📍 {order_address}</Text>
         <Text
           style={styles.top_text}
-          onPress={() => Linking.openURL("tel:+375296453966")}
+          onPress={() => Linking.openURL(`tel:${phone_number}`)}
         >
-          📞 +375296453966
+          📞 {phone_number}
         </Text>
       </View>
       <View style={styles.bottom}>
         <View style={styles.left}>
-          <Text style={styles.worker}>👷‍♂️ Игорь, Петр</Text>
+          <Text style={styles.worker}>👷‍♂️ {worker_names?.join(", ") || ""}</Text>
           <Text style={styles.driver}>
-            <View style={styles.color} /> Александр
+            <View style={styles.color} /> {driver_name}
           </Text>
         </View>
         <View style={styles.right}>
-          <Text style={styles.money}>23.6 - 60 BYN</Text>
-          <Text style={styles.type}>Ожидает назначения</Text>
+          <Text style={styles.money}>
+            {meters} - {price} BYN
+          </Text>
+          <Text style={styles.type}>{order_state}</Text>
         </View>
       </View>
     </TouchableOpacity>
