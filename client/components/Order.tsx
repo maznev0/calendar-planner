@@ -2,35 +2,15 @@ import { router, useLocalSearchParams } from "expo-router";
 import { View, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import Text from "./Text";
 import { STATE_COLOR } from "../constants/order";
-import { IOrder, OrderState } from "../types/order";
-
-// interface IOrder {
-//   id: string;
-//   order_date: string;
-//   order_address: string;
-//   phone_number: string;
-//   meters: number;
-//   price: number;
-//   order_state: OrsderState;
-//   driver_name: string;
-//   worker_names: string[];
-// }
+import { IOrder } from "../types/order";
+import { Worker } from "../types/users";
 
 interface Props {
-  order: {
-    id: string;
-    order_date: string;
-    order_address: string;
-    phone_number: string;
-    meters: number;
-    price: number;
-    order_state: OrderState;
-    driver_name: string;
-    worker_names: string[];
-  };
+  order: IOrder;
+  workers: Worker[];
 }
 
-function OrderCard({ order }: Props) {
+function Order({ order }: Props) {
   const {
     id,
     order_date,
@@ -39,19 +19,12 @@ function OrderCard({ order }: Props) {
     meters,
     price,
     order_state,
-    driver_name,
-    worker_names,
+    drivername,
+    car_color,
   } = order;
-  const { date, dayDate } = useLocalSearchParams<{
-    date: string;
-    dayDate: string;
-  }>();
 
   return (
-    <TouchableOpacity
-      onPress={() => router.push(`/week/${date}/day/${dayDate}/order/${id}`)}
-      style={styles.container}
-    >
+    <View style={styles.container}>
       <View style={styles.top}>
         <Text style={styles.top_text}>📍 {order_address}</Text>
         <Text
@@ -63,10 +36,21 @@ function OrderCard({ order }: Props) {
       </View>
       <View style={styles.bottom}>
         <View style={styles.left}>
-          <Text style={styles.worker}>👷‍♂️ {worker_names?.join(", ") || ""}</Text>
-          <Text style={styles.driver}>
-            <View style={styles.color} /> {driver_name}
-          </Text>
+          {/* <Text style={styles.worker}>👷‍♂️ {worker_names?.join(", ") || ""}</Text> */}
+          <View style={styles.driver_item}>
+            <View style={styles.driver_name}>
+              <View
+                style={[
+                  styles.car_color,
+                  {
+                    backgroundColor: car_color,
+                  },
+                ]}
+              />
+              <Text style={styles.driver_text}>{drivername}</Text>
+            </View>
+            <View style={styles.color} /> {drivername}
+          </View>
         </View>
         <View style={styles.right}>
           <Text style={styles.money}>
@@ -77,7 +61,7 @@ function OrderCard({ order }: Props) {
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -134,6 +118,30 @@ const styles = StyleSheet.create({
 
     opacity: 0.6,
   },
+  driver_item: {
+    width: "100%",
+    height: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  driver_text: {
+    fontSize: 15,
+    fontWeight: 200,
+    color: "#fff",
+    width: "100%",
+    // fontSize: 20,
+    // color: "#fff",
+    // fontWeight: 300,
+    textAlign: "left",
+  },
+  car_color: { width: 10, height: 10, borderRadius: "50%" },
+  driver_name: {
+    width: "70%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
   right: {
     flexDirection: "column",
     alignItems: "flex-end",
@@ -151,4 +159,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrderCard;
+export default Order;

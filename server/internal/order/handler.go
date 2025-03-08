@@ -36,8 +36,8 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
 		h.logger.Errorf("Invalid request: %v", w)
+		h.respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 	err := h.service.Create(r.Context(), &request.Order, request.Workers)
 	if err != nil {
 		h.logger.Errorf("Failed to create order: %v", err)
-		http.Error(w, "Failed to create order", http.StatusInternalServerError)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to create order")
 		return
 	}
 
@@ -61,20 +61,18 @@ func (h *handler) GetQuantityByDates(w http.ResponseWriter, r *http.Request, _ h
 
 	if startDate == "" || endDate == "" {
 		h.logger.Error("Missing start or end date")
-		http.Error(w, "Missing start or end date", http.StatusBadRequest)
+		h.respondWithError(w, http.StatusBadRequest, "Missing start or end date")
 		return
 	}
 
 	dates, err := h.service.GetQuantityByDates(r.Context(), startDate, endDate)
 	if err != nil {
 		h.logger.Errorf("Failed to get orders by dates: %v", err)
-		http.Error(w, "Failed to fetch data", http.StatusInternalServerError)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to fetch data")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(dates)
+	h.respondWithJSON(w, http.StatusOK, dates)
 	h.logger.Info("Get Quantity By Dates succesfully working.")
 }
 
@@ -82,26 +80,54 @@ func (h *handler) GetOrdersByDate(w http.ResponseWriter, r *http.Request, params
 	date := r.URL.Query().Get("date")
 	if date == "" {
 		h.logger.Error("Date is empty.")
-		http.Error(w, "Missing 'date' query parameter", http.StatusBadRequest)
+		h.respondWithError(w, http.StatusBadRequest, "Missing 'date' query parameter")
 		return
 	}
 
 	orders, err := h.service.GetOrdersByDate(r.Context(), date)
 	if err != nil {
 		h.logger.Errorf("Failed to get orders: %v", err)
-		http.Error(w, "Failed to get orders", http.StatusInternalServerError)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to get orders")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orders)
+	h.respondWithJSON(w, http.StatusOK, orders)
 	h.logger.Info("Get Orders By Date succesfully working.")
 }
 
 
 func (h *handler) GetById(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	w.WriteHeader(200)
-	w.Write([]byte("id - order"))
+	id := params.ByName("id")
+
+	order, workers, payments, err := h.service.GetById(r.Context(), id)
+	if err != nil {
+		h.logger.Errorf("failed to get order by id: %v", err)
+		h.respondWithError(w, http.StatusInternalServerError, "failed to get order")
+		return
+	}
+
+	response := struct {
+		Order    Order    `json:"order"`
+		Workers  []Worker `json:"workers"`
+		Payments Payments `json:"payments"`
+	}{
+		Order:    order,
+		Workers:  workers,
+		Payments: payments,
+	}
+
+	h.respondWithJSON(w, http.StatusOK, response)
 }
 
+func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {
+	h.respondWithJSON(w, code, map[string]string{"error": message})
+}
+
+func (h *handler) respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		h.logger.Errorf("Failed to encode response: %v", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
+}

@@ -31,14 +31,14 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		h.logger.Errorf("Invalid request body: %v", err)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		h.respondWithError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	err := h.service.Create(r.Context(), &request, request.DriverId)
 	if err != nil {
 		h.logger.Errorf("Failed to create car: %v", err)
-		http.Error(w, "Failed to create car", http.StatusInternalServerError)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to create car")
 		return
 	}
 
@@ -50,14 +50,22 @@ func (h *handler) GetAll(w http.ResponseWriter, r *http.Request, params httprout
 	cars, err := h.service.GetAll(r.Context())
 	if err != nil {
 		h.logger.Errorf("Failed to get cars: %v", err)
-		http.Error(w, "Failed to fetch cars", http.StatusInternalServerError)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to fetch cars")
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	h.respondWithJSON(w, http.StatusOK, cars)
+	h.logger.Info("Get All cars succesfully working.")
+}
 
-	if err := json.NewEncoder(w).Encode(cars); err != nil {
+func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {
+	h.respondWithJSON(w, code, map[string]string{"error": message})
+}
+
+func (h *handler) respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
 		h.logger.Errorf("Failed to encode response: %v", err)
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 	}

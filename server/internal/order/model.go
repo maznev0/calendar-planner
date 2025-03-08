@@ -8,8 +8,21 @@ type Order struct {
 	Meters 		float32   `json:"meters" binding:"required"`
 	Price 		int       `json:"price" binding:"required"`
 	DriverId 	string    `json:"driver_id"`
+	Drivername 	string    `json:"drivername"`
+	CarColor    string    `json:"car_color"`
 	Note 	    string    `json:"note"`
 	OrderState  string    `json:"order_state" binding:"required"`
+}
+
+type Payments struct {
+	TotalPrice  int `json:"total_price" binding:"required"`
+	DriverPrice int `json:"driver_price" binding:"required"`
+	OtherPrice  int `json:"other_price" binding:"required"`
+}
+
+type Worker struct {
+	Workername 	  string `json:"workername" binding:"required"`
+	WorkerPayment int    `json:"worker_payment"`
 }
 
 type OrderWithDetails struct {
@@ -20,6 +33,7 @@ type OrderWithDetails struct {
 	Meters       float32   `json:"meters"`
 	Price        int       `json:"price"`
 	DriverName   string    `json:"driver_name"`
+	CarColor     string    `json:"car_color"`
 	OrderState   string    `json:"order_state"`
 	WorkerNames  []string  `json:"worker_names"`
 }

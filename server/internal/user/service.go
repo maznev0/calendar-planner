@@ -6,7 +6,7 @@ type Service interface {
 	Create(ctx context.Context, user *User) error
 	GetAll(ctx context.Context) (users []User, err error)
 	GetById(ctx context.Context, id string) (User, error)
-	GetWorkersAndDrivers(ctx context.Context) ([]User, error)
+	GetWorkersAndDrivers(ctx context.Context, date string) ([]Drivers, []Workers, error)
 	//Update(ctx context.Context, user User) error
 	//Delete(ctx context.Context, id string) error
 }
@@ -27,8 +27,8 @@ func (s *service) GetAll(ctx context.Context) ([]User, error) {
 	return s.repo.GetAll(ctx)
 }
 
-func (s *service) GetWorkersAndDrivers(ctx context.Context) ([]User, error) {
-	return s.repo.GetWorkersAndDrivers(ctx)
+func (s *service) GetWorkersAndDrivers(ctx context.Context, date string) ([]Drivers, []Workers, error) {
+	return s.repo.GetWorkersAndDrivers(ctx, date)
 }
 
 func (s *service) GetById(ctx context.Context, id string) (User, error) {

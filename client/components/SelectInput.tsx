@@ -1,13 +1,14 @@
-import { Alert, StyleSheet } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import React, { FunctionComponent } from "react";
 import { SelectList } from "react-native-dropdown-select-list";
-import { IUser } from "../types/users";
+import { IDriver } from "../types/users";
+import Text from "./Text";
 
 interface Props {
   placeholder: string;
   name: string;
   value: string;
-  data: IUser[];
+  data: IDriver[];
   onChange: (value: string) => void;
 }
 
@@ -28,15 +29,33 @@ const SelectInput: FunctionComponent<Props> = ({
 }) => {
   const formattedData = data.map((e) => ({
     key: e.id,
-    value: `${name} ${e.username}`,
+    // value: `${name} ${e.username}`,
+    value: (
+      <View style={styles.driver_item}>
+        <View style={styles.driver_name}>
+          <View
+            style={[
+              styles.car_color,
+              {
+                backgroundColor: e.car_color,
+              },
+            ]}
+          />
+          <Text style={styles.driver_text}>
+            {name || ""} {e.username}
+          </Text>
+        </View>
+        {/* <View> */}
+        <Text style={styles.orders}>{e.order_quantity}</Text>
+        {/* </View> */}
+      </View>
+    ),
   }));
 
   return (
     <SelectList
       // setSelected={(e) => onChange(e.key)}
-      setSelected={(selectedItem) => {
-        onChange(String(selectedItem));
-      }}
+      setSelected={onChange}
       save="key"
       data={formattedData}
       placeholder={name + placeholder}
@@ -58,6 +77,36 @@ const SelectInput: FunctionComponent<Props> = ({
 export default SelectInput;
 
 const styles = StyleSheet.create({
+  driver_item: {
+    width: "100%",
+    height: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+
+    // borderWidth: 1,
+    // borderColor: "#FFF",
+  },
+  driver_text: {
+    width: "100%",
+    fontSize: 20,
+    color: "#fff",
+    fontWeight: 300,
+    textAlign: "left",
+  },
+  car_color: { width: 10, height: 10, borderRadius: "50%" },
+  driver_name: {
+    width: "70%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  orders: {
+    fontWeight: 300,
+    fontSize: 23,
+    color: "#FFF",
+    textAlign: "center",
+  },
   input_name: {
     width: "100%",
     color: "#FFF",
@@ -94,24 +143,20 @@ const styles = StyleSheet.create({
   },
   dropdownStyles: {
     width: "100%",
-    height: 170,
+    height: 200,
     backgroundColor: "#252525",
     borderRadius: 20,
     zIndex: 50,
 
     marginTop: 10,
-
-    shadowColor: "#FFF",
-    shadowOffset: { width: 10, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
+    padding: 0,
 
     borderWidth: 1,
     borderColor: "#A6A6A6",
   },
   dropdownItemStyles: {
     width: "100%",
-    height: 51,
+    height: 47,
     flexDirection: "row",
     alignItems: "center",
   },

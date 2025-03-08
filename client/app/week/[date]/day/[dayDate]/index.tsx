@@ -4,7 +4,7 @@ import Header from "../../../../../components/Header";
 import Button from "../../../../../components/Button";
 import { router, useLocalSearchParams } from "expo-router";
 import useFetch from "../../../../../hooks/useFetch";
-import { getOrderByDay } from "../../../../../api/order";
+import { getOrdersByDay } from "../../../../../api/order";
 import { OrderCardParams, OrderCardResponse } from "../../../../../types/order";
 import Text from "../../../../../components/Text";
 
@@ -17,7 +17,7 @@ export default function Day() {
   const { data: orders, isLoading } = useFetch<
     OrderCardResponse,
     OrderCardParams
-  >(getOrderByDay, {
+  >(getOrdersByDay, {
     date: dayDate,
   });
 

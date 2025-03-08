@@ -11,13 +11,13 @@ import {
   SelectList,
 } from "react-native-dropdown-select-list";
 import Text from "./Text";
-import { IUser } from "../types/users";
+import { IDriver, IWorker } from "../types/users";
 
 interface Props {
   placeholder: string;
-  name: string;
+  // name: string;
   // value: string;
-  data: IUser[];
+  data: (IWorker | IDriver)[];
   onChange: (value: any) => void;
 }
 
@@ -30,16 +30,39 @@ interface Props {
 // ];
 
 const MultipleSelectInput: FunctionComponent<Props> = ({
-  name,
+  // name,
   placeholder,
   data,
-  // value,
   onChange,
 }) => {
-  const formattedData = data.map((e) => ({
-    key: e.id,
-    value: `${name} ${e.username}`,
-  }));
+  const formattedData = data.map((e) => {
+    if (e.user_role === "driver") {
+      return {
+        key: e.id,
+        value: (
+          <View style={styles.driver_item}>
+            <View style={styles.driver_name}>
+              <View
+                style={[
+                  styles.car_color,
+                  {
+                    backgroundColor: e.car_color,
+                  },
+                ]}
+              />
+              <Text style={styles.driver_text}>{e.username}</Text>
+            </View>
+            <Text style={styles.orders}>{e.order_quantity}</Text>
+          </View>
+        ),
+      };
+    } else {
+      return {
+        key: e.id,
+        value: `👷‍♂️ ${e.username}`,
+      };
+    }
+  });
 
   const [worker, setWorker] = useState([]);
 
@@ -47,41 +70,27 @@ const MultipleSelectInput: FunctionComponent<Props> = ({
     <View>
       <MultipleSelectList
         save="key"
-        // setSelected={(selectedItems) => {
-        //   // selectedItems — это массив выбранных объектов { key, value }
-        //   // Преобразуем массив selectedItems в массив id (e.id)
-        //   // const selectedIds = selectedItems.map((item) => ({
-        //   //   worker_id: item.key,
-        //   //   worker_payment: 0,
-        //   // }));
-        //   // // Передаем массив id в onChange
-        //   Alert.alert(typeof selectedItems);
-        //   return onChange(selectedItems);
-        //   // Alert.alert(selectedItems);
-        // }}
-        setSelected={(a) => setWorker(a)}
+        setSelected={setWorker}
         onSelect={() => {
+          // console.log(worker);
           onChange(worker);
         }}
         data={formattedData}
-        placeholder={name + placeholder}
+        placeholder={placeholder}
         arrowicon={<></>}
         searchicon={<></>}
         search={false}
         boxStyles={styles.boxStyles}
-        inputStyles={{
-          ...styles.inputStyles,
-          //color: value ? styles.selectedText.color : styles.placeholderText.color,
-        }}
+        inputStyles={styles.inputStyles}
         dropdownStyles={styles.dropdownStyles}
         dropdownItemStyles={styles.dropdownItemStyles}
         dropdownTextStyles={styles.dropdownTextStyles}
         badgeStyles={styles.badge_box}
+        badgeTextStyles={styles.badgeTextStyles}
         checkBoxStyles={{ display: "none" }}
-        label="AAA"
+        label=""
         labelStyles={{ display: "none" }}
       />
-      {/* <Text>{worker.join(" ")}</Text> */}
     </View>
   );
 };
@@ -89,6 +98,36 @@ const MultipleSelectInput: FunctionComponent<Props> = ({
 export default MultipleSelectInput;
 
 const styles = StyleSheet.create({
+  driver_item: {
+    width: "100%",
+    height: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+
+    // borderWidth: 1,
+    // borderColor: "#FFF",
+  },
+  driver_text: {
+    width: "100%",
+    fontSize: 20,
+    color: "#fff",
+    fontWeight: 300,
+    textAlign: "left",
+  },
+  car_color: { width: 10, height: 10, borderRadius: "50%" },
+  driver_name: {
+    width: "70%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  orders: {
+    fontWeight: 300,
+    fontSize: 23,
+    color: "#FFF",
+    textAlign: "center",
+  },
   boxStyles: {
     width: "100%",
     minHeight: 51,
@@ -105,21 +144,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 300,
     textAlign: "left",
-  },
-  selectedText: {
-    color: "#FFF",
-  },
-  placeholderText: {
     color: "#A6A6A6",
   },
   dropdownStyles: {
     width: "100%",
-    height: 170,
+    height: 200,
     backgroundColor: "#252525",
     borderRadius: 20,
     borderWidth: 1,
-
-    // borderColor: "#A6A6A6",
   },
   dropdownItemStyles: {
     width: "100%",
@@ -131,5 +163,12 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: 300,
   },
-  badge_box: {},
+  badge_box: {
+    width: 150,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  badgeTextStyles: {
+    fontSize: 13,
+  },
 });

@@ -63,9 +63,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    minHeight: "70%",
     color: "#FFF",
     fontSize: 20,
     fontWeight: 300,
+    // borderWidth: 1,
+    // borderColor: "#FFF",
   },
   focusedInput: {
     borderColor: "#E4D478",

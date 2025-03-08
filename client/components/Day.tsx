@@ -1,25 +1,34 @@
-import { router } from "expo-router";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { View, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import Text from "./Text";
+import { formatFullUIDate, getDayOfWeek } from "../utils/date";
 
 interface Props {
-  weekday: string;
-  day: string;
+  dayDate: string;
   orders: number;
-  onNavigate: () => void;
 }
 
-export default function Day({ weekday, day, orders, onNavigate }: Props) {
+export default function Day({ dayDate, orders }: Props) {
+  const { date } = useLocalSearchParams<{ date: string }>();
+
+  const isCurrent: boolean =
+    formatFullUIDate(new Date()) === formatFullUIDate(new Date(dayDate));
+
+  const handleNavigate = () => router.push(`/week/${date}/day/${dayDate}`);
+
   return (
-    <TouchableOpacity onPress={onNavigate}>
-      <View style={styles.container}>
-        <View style={styles.date}>
-          <Text style={styles.weekday}>{weekday.toUpperCase()}</Text>
-          <Text style={styles.day}>{day}</Text>
-        </View>
-        <View>
-          <Text style={styles.orders}>{orders}</Text>
-        </View>
+    <TouchableOpacity
+      style={[styles.container, isCurrent ? styles.current : {}]}
+      onPress={handleNavigate}
+    >
+      <View style={styles.date}>
+        <Text style={styles.weekday}>
+          {getDayOfWeek(dayDate).toUpperCase()}
+        </Text>
+        <Text style={styles.day}>{formatFullUIDate(dayDate)}</Text>
+      </View>
+      <View style={styles.orders_block}>
+        <Text style={styles.orders}>{orders}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -30,11 +39,17 @@ const styles = StyleSheet.create({
     height: 90,
     backgroundColor: "#252525",
     borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#252525",
+
     paddingHorizontal: 17,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 12,
+  },
+  current: {
+    borderColor: "#FFF",
   },
   date: {
     flexDirection: "column",
@@ -52,9 +67,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "300",
   },
+  orders_block: {
+    flexDirection: "row",
+  },
   orders: {
+    height: "100%",
     color: "#E4D478",
     fontSize: 80,
-    fontWeight: "200",
+    fontWeight: "100",
   },
 });

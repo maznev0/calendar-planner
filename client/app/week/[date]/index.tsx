@@ -2,10 +2,9 @@ import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import Day from "../../../components/Day";
 import Header from "../../../components/Header";
 import {
-  formatToUIDate,
-  getDayOfWeek,
   getFormatUIWeek,
   getStartEndWeekDates,
+  getWeekByDate,
 } from "../../../utils/date";
 import Button from "../../../components/Button";
 import { router, useLocalSearchParams, useRouter } from "expo-router";
@@ -19,31 +18,19 @@ import Text from "../../../components/Text";
 import { useMemo } from "react";
 
 export default function Home() {
-  // const { date } = useLocalSearchParams<{ date?: string }>();
-  // const isValidDate =
-  //   date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(Date.parse(date));
-  // const selectedDate = isValidDate ? new Date(date) : new Date();
+  const { date } = useLocalSearchParams<{ date: string }>();
 
-  // const selectedDate = useMemo(() => {
-  //   const isValidDate =
-  //     date && /^\d{4}-\d{2}-\d{2}$/.test(date) && !isNaN(Date.parse(date));
-  //   return isValidDate ? new Date(date) : new Date();
-  // }, [date]);
-
-  const { date } = useLocalSearchParams<{ date?: string }>();
-  const selectedDate = useMemo(() => {
-    return new Date(date || "");
-  }, [date]);
-
-  const startEndWeekDates = useMemo(
-    () => getStartEndWeekDates(selectedDate),
-    [date]
-  );
+  const selectedDate = new Date(date);
 
   const { data, isLoading } = useFetch<
     OrderQuantityResponse,
     OrderQuantityParams
-  >(getOrdersQuantity, startEndWeekDates);
+  >(getOrdersQuantity, getStartEndWeekDates(selectedDate));
+
+  const week = useMemo(
+    () => getWeekByDate(data || [], selectedDate),
+    [data, date]
+  );
 
   if (isLoading) {
     return (
@@ -53,33 +40,19 @@ export default function Home() {
     );
   }
 
-  const handleNavigateToDay = (day: string) => {
-    router.push(`/week/${date}/day/${day}`);
-  };
-
   return (
     <View style={styles.container}>
       <Header>{getFormatUIWeek(selectedDate)}</Header>
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        {data?.map(({ date, orders_quantity }) => (
-          <Day
-            key={date}
-            weekday={getDayOfWeek(date)}
-            day={formatToUIDate(date)}
-            orders={orders_quantity}
-            onNavigate={() => handleNavigateToDay(date)}
-          />
+        {week.map(({ date, orders_quantity }) => (
+          <Day key={date} dayDate={date} orders={orders_quantity} />
         ))}
-        {/* <Day weekday={"пн"} day={"27 янв 2025"} orders={3} />
-        <Day weekday={"вт"} day={"28 янв 2025"} orders={0} />
-        <Day weekday={"ср"} day={"29 янв 2025"} orders={2} />
-        <Day weekday={"чт"} day={"30 янв 2025"} orders={5} />
-        <Day weekday={"пт"} day={"31 янв 2025"} orders={1} />
-        <Day weekday={"сб"} day={"1 фев 2025"} orders={7} /> */}
         <Button onPress={() => {}}>Статистика</Button>
       </ScrollView>
     </View>
   );
+}
+{
 }
 
 const styles = StyleSheet.create({

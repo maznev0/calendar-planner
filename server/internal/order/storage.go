@@ -2,7 +2,6 @@ package order
 
 import (
 	"context"
-	"server/internal/payments"
 	"server/internal/worker"
 	"server/pkg/logging"
 
@@ -14,7 +13,7 @@ type Repository interface {
 	//GetAll(ctx context.Context) (orders []Order, err error)
 	GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error)
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
-	GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error)
+	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
 	//Update(ctx context.Context, order Order) error
 	//Delete(ctx context.Context, id string) error
 }
@@ -98,10 +97,11 @@ func (r *PostgresRepository) GetOrdersByDate(ctx context.Context, date string) (
 
 	query := `
 		SELECT o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, 
-			o.meters, o.price, u.username AS driver_name, o.order_state
-	    FROM ORDERS o
-		JOIN USERS u ON o.driver_id = u.id
-		WHERE o.order_date = $1`
+		o.meters, o.price, u.username AS driver_name, c.color, o.order_state
+	FROM ORDERS o
+	JOIN USERS u ON o.driver_id = u.id
+	LEFT JOIN CARS c ON o.driver_id = c.driver_id
+	WHERE o.order_date = $1`
 	rows, err := r.db.Query(ctx, query, date)
 	if err != nil {
 		r.logger.Errorf("Failed to get orders by date: %v", err)
@@ -113,7 +113,7 @@ func (r *PostgresRepository) GetOrdersByDate(ctx context.Context, date string) (
 
 	for rows.Next() {
 		var o OrderWithDetails
-		if err := rows.Scan(&o.Id, &o.Date, &o.Address, &o.PhoneNumber, &o.Meters, &o.Price, &o.DriverName, &o.OrderState); err != nil {
+		if err := rows.Scan(&o.Id, &o.Date, &o.Address, &o.PhoneNumber, &o.Meters, &o.Price, &o.DriverName, &o.CarColor, &o.OrderState); err != nil {
 			r.logger.Errorf("Failed to scan order: %v", err)
 			return nil, err
 		}
@@ -157,6 +157,49 @@ func (r *PostgresRepository) GetOrdersByDate(ctx context.Context, date string) (
 }
 
 
-func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error) {
-	return Order{}, worker.Worker{}, payments.Payments{}, nil
+func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, []Worker, Payments, error) {
+	var order Order
+	var workers []Worker
+	var payments Payments
+
+	// Получение заказа
+	queryOrder := `SELECT o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, o.meters, o.price, o.driver_id, 
+		u.username AS driver_name, c.color, o.note, o.order_state FROM orders o
+		JOIN USERS u ON o.driver_id = u.id 
+		LEFT JOIN cars c ON o.driver_id = c.driver_id WHERE o.id = $1
+		`
+	row := r.db.QueryRow(ctx, queryOrder, id)
+	if err := row.Scan(&order.Id, &order.Date, &order.Address, &order.PhoneNumber, &order.Meters, &order.Price, &order.DriverId, &order.Drivername, &order.CarColor, &order.Note, &order.OrderState); err != nil {
+		return Order{}, nil, Payments{}, err
+	}
+
+	// Получение работников
+	queryWorkers := `SELECT u.username, ow.worker_payment FROM order_workers ow 
+		JOIN users u ON ow.worker_id = u.id WHERE ow.order_id = $1`
+	rows, err := r.db.Query(ctx, queryWorkers, id)
+	if err != nil {
+		return order, nil, payments, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var worker Worker
+		if err := rows.Scan(&worker.Workername, &worker.WorkerPayment); err != nil {
+			return order, nil, payments, err
+		}
+		workers = append(workers, worker)
+	}
+
+	// Получение платежей
+	queryPayments := `SELECT total_price, driver_price, other_price FROM payments WHERE order_id = $1`
+	row = r.db.QueryRow(ctx, queryPayments, id)
+	if err := row.Scan(&payments.TotalPrice, &payments.DriverPrice, &payments.OtherPrice); err != nil {
+		if err.Error() == "no rows in result set" {
+			payments = Payments{}
+		} else {
+			return order, workers, Payments{}, err
+		}
+	}
+
+	return order, workers, payments, nil
 }

@@ -15,19 +15,25 @@ import Button from "../../../../../../components/Button";
 import MultipleSelectInput from "../../../../../../components/MultipleSelectInput";
 import { addOrder, getWorkersDrivers } from "../../../../../../api/order";
 import useFetch from "../../../../../../hooks/useFetch";
-import { IUser } from "../../../../../../types/users";
+import { WorkersDriversResponse } from "../../../../../../types/users";
 import { IOrderFetch, IOrderState } from "../../../../../../types/order";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { DayDateParams } from "../../../../../../types/date";
+
+type DATE = string;
 
 const Add = () => {
   const { date, dayDate } = useLocalSearchParams<{
     date: string;
     dayDate: string;
   }>();
-
-  const { data } = useFetch<{ workers: IUser[]; drivers: IUser[] }, null>(
-    getWorkersDrivers
+  const { data } = useFetch<WorkersDriversResponse, DayDateParams>(
+    getWorkersDrivers,
+    {
+      day: dayDate,
+    }
   );
+  const router = useRouter();
 
   const [order, setOrder] = useState<IOrderState>({
     order_address: "",
@@ -44,13 +50,16 @@ const Add = () => {
     setOrder({ ...order, [field]: value });
   };
 
-  const handleAddWorker = (value: string) => {
+  const handleAddWorker = (value: string[]) => {
     // setOrder((prev) => ({
     //   ...prev,
     //   workers: [...prev.workers, { worker_id: id, worker_payment: 0 }],
     // }));
 
-    setOrder({ ...order, workers: [...order.workers, value] });
+    // console.log(order);
+
+    // setOrder({ ...order, workers: [...order.workers, value] });
+    setOrder({ ...order, workers: value });
   };
 
   // const handleSetWorkers = (workers) => {
@@ -62,7 +71,7 @@ const Add = () => {
       order: {
         price: Number(order.price),
         meters: parseFloat(order.meters),
-        order_date: new Date(dayDate).toISOString().split("T")[0],
+        order_date: dayDate,
         order_address: order.order_address,
         phone_number: order.phone_number,
         driver_id: order.driver_id,
@@ -76,7 +85,12 @@ const Add = () => {
         })),
       ],
     };
-    Alert.alert(String(Array.isArray(fetchOrder.workers)));
+    // Alert.alert(String(order.workers.join(", ")));
+    // console.log(fetchOrder);
+    // console.log(router);
+    router.back();
+    // router.back();
+    // router.push(`/week/${date}/day/${dayDate}`);
     await addOrder(fetchOrder);
   };
   return (
@@ -118,7 +132,7 @@ const Add = () => {
             />
             <Input
               placeholder="+375"
-              name=""
+              name="📞"
               type="phone-pad"
               value={order.phone_number}
               onChangeText={(e) => handleChangeText("phone_number", e)}
@@ -133,9 +147,9 @@ const Add = () => {
               }}
             />
             <MultipleSelectInput
-              name="👷‍♂️"
+              // name="👷‍♂️"
               placeholder="Рабочий"
-              data={data?.workers || []}
+              data={[...(data?.workers ?? []), ...(data?.drivers ?? [])]}
               // value={order.workers.length}
               onChange={handleAddWorker}
               // onChange={(ids) => handleSetWorkers(ids)}

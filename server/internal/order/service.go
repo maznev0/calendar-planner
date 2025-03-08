@@ -2,14 +2,13 @@ package order
 
 import (
 	"context"
-	"server/internal/payments"
 	"server/internal/worker"
 )
 
 type Service interface {
 	GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error)
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
-	GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error)
+	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
 	Create(ctx context.Context, order *Order, workers []worker.Worker) error
 }
 
@@ -29,7 +28,7 @@ func (s *service) GetOrdersByDate(ctx context.Context, date string) ([]OrderWith
 	return s.repo.GetOrdersByDate(ctx, date)
 }
 
-func (s *service) GetById(ctx context.Context, id string) (Order, worker.Worker, payments.Payments, error) {
+func (s *service) GetById(ctx context.Context, id string) (Order, []Worker, Payments, error) {
 	return s.repo.GetById(ctx, id)
 }
 

@@ -52,10 +52,10 @@ Meters float32 `json:"meters"`
 Price int `json:"price"`
 DriverName string `json:"driver_name"`
 
-# CarColor string `json:"car_color"` (!)требует правки в коде
+CarColor string `json:"car_color"` (!)требует правки в коде
 
-    OrderState   string    `json:"order_state"`
-    WorkerNames  []string  `json:"worker_names"`
+OrderState string `json:"order_state"`
+WorkerNames []string `json:"worker_names"`
 
 }
 
@@ -75,12 +75,12 @@ GET http://localhost:10000/orders/day?date=YYYY-MM-DD
 "price": 60,
 "driver_name": "Дмитрий",
 
-# "car_color": "#FFFFFF"
+      "car_color": "#FFFFFF"
 
-        "order_state": "Готов",
-        "worker_names": [
-            "Вадим",
-            "Николай"
+      "order_state": "Готов",
+      "worker_names": [
+         "Вадим",
+         "Николай"
         ]
       },
 

@@ -38,25 +38,32 @@ func (h *handler) GetAll(w http.ResponseWriter, r *http.Request, params httprout
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	if err := json.NewEncoder(w).Encode(users); err != nil {
-		h.logger.Error("failed to encode response", err)
-		h.respondWithError(w, http.StatusInternalServerError, "Failed to encode response")
-	}
+	h.respondWithJSON(w, http.StatusOK, users)
 }
 
 func (h *handler) GetWorkersAndDrivers(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
-	users, err := h.service.GetWorkersAndDrivers(r.Context())
+	date := r.URL.Query().Get("date")
+	if date == "" {
+		h.logger.Error("Date parameter is missing")
+		h.respondWithError(w, http.StatusBadRequest, "Missing 'date' query parameter")
+		return
+	}
+
+	drivers, workers, err := h.service.GetWorkersAndDrivers(r.Context(), date)
 	if err != nil {
 		h.logger.Errorf("Failed to get users: %v", err)
 		h.respondWithError(w, http.StatusInternalServerError, "Failed to fetch users")
 		return
 	}
 
-	h.respondWithJSON(w, http.StatusOK, users)
+	response := map[string]interface{}{
+		"drivers": drivers,
+		"workers": workers,
+	}
+
+	h.respondWithJSON(w, http.StatusOK, response)
 }
+
 
 
 func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

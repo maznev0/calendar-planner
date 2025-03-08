@@ -25,7 +25,7 @@ func Start(handler http.Handler, cfg *config.Config) {
 	}
 
 	server := &http.Server{
-		Handler:      handler, // Теперь принимает интерфейс http.Handler
+		Handler:      handler,
 		WriteTimeout: 5 * time.Second,
 		ReadTimeout:  5 * time.Second,
 	}

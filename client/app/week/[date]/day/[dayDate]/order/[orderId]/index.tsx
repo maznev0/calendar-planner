@@ -3,14 +3,39 @@ import React from "react";
 import Header from "../../../../../../../components/Header";
 import OrderCard from "../../../../../../../components/OrderCard";
 import Button from "../../../../../../../components/Button";
+import { useLocalSearchParams } from "expo-router";
+import useFetch from "../../../../../../../hooks/useFetch";
+import OrderC from "../../../../../../../components/Order";
+import {
+  IOrder,
+  OrderParams,
+  OrderResponse,
+} from "../../../../../../../types/order";
+import { getOrderByID } from "../../../../../../../api/order";
+import { Worker } from "../../../../../../../types/users";
 
 export default function Order() {
+  const { date, dayDate, orderId } = useLocalSearchParams<{
+    date: string;
+    dayDate: string;
+    orderId: string;
+  }>();
+
+  const { data, isLoading } = useFetch<OrderResponse, OrderParams>(
+    getOrderByID,
+    { id: orderId }
+  );
+
+  if (isLoading) {
+    return <Text>LOADING ...</Text>;
+  }
+
   return (
     <View style={styles.container}>
       <Header>Понедельник 27 января</Header>
       <ScrollView style={styles.info}>
         <View style={styles.list}>
-          <OrderCard />
+          <OrderC order={data!.order} workers={data!.workers} />
           <View style={styles.extra}>
             <Text style={styles.extra_title}>📌 Примечание:</Text>
             <Text style={styles.extra_text}>
