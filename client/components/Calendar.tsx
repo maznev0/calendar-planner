@@ -1,5 +1,5 @@
 import { Image, StyleSheet, View } from "react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { CalendarList } from "react-native-calendars";
 import CalendarDay from "./CalendarDay";
 import { LocaleConfig } from "react-native-calendars";
@@ -76,27 +76,45 @@ const Calendar = () => {
   return (
     <View style={styles.container}>
       <CalendarList
-        renderHeader={(date) => (
-          <View style={styles.header}>
-            <Image
-              style={styles.icon}
-              source={require("../assets/icons/statistics.png")}
-            />
-            <Text style={styles.monthText}>{date.toString("MMMM")}</Text>
-          </View>
+        calendarHeight={600}
+        debug={true}
+        windowSize={3}
+        animateScroll={false}
+        // horizontal={true}
+        pagingEnabled={false}
+        disableMonthChange={true}
+        keyExtractor={(item, index) => `calendar-${index}`}
+        showScrollIndicator={false}
+        // extraData={markedDates}
+        // disableVirtualization={true}
+        removeClippedSubviews={false}
+        // onVisibleMonthsChange={(months) => {
+        //   console.log("Visible months:", months);
+        // }}
+        renderHeader={useCallback(
+          (date) => (
+            <View style={styles.header}>
+              <Image
+                style={styles.icon}
+                source={require("../assets/icons/statistics.png")}
+              />
+              <Text style={styles.monthText}>{date.toString("MMMM")}</Text>
+            </View>
+          ),
+          []
         )}
         hideDayNames
-        initialNumToRender={3}
+        initialNumToRender={5}
+        maxToRenderPerBatch={1}
         firstDay={1}
         markingType={"multi-dot"}
         markedDates={markedDates}
-        animateScroll={false}
-        pastScrollRange={12}
-        futureScrollRange={12}
+        // animateScroll={false}
         scrollEnabled={true}
-        showScrollIndicator={true}
+        // showScrollIndicator={true}
         style={styles.calendar}
         dayComponent={({ date, marking, state }) => (
+          // <Text>{date?.toString()}</Text>
           <CalendarDay date={date} marking={marking} state={state} />
         )}
         theme={{
@@ -127,6 +145,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#252525",
+    borderWidth: 1,
+    borderColor: "#000",
   },
   calendar: {},
   header: {
@@ -146,7 +166,7 @@ const styles = StyleSheet.create({
   },
   monthText: {
     fontSize: 28,
-    fontWeight: "400",
+    fontWeight: "500",
     color: "#E4D478",
   },
 });

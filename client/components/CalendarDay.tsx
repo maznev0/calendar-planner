@@ -21,7 +21,7 @@ const CalendarDay: FC<Props> = memo(
     };
 
     return (
-      <TouchableWithoutFeedback onPress={handlePress}>
+      <TouchableWithoutFeedback style={{ height: 68 }} onPress={handlePress}>
         <View style={styles.container}>
           <Text
             style={[
@@ -56,10 +56,11 @@ export default CalendarDay;
 const styles = StyleSheet.create({
   container: {
     height: 68,
+    // minHeight: 45,
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "flex-start",
-    //  borderTopWidth: 1,
+    // borderWidth: 1,
     //  borderBottomWidth: 1,
     borderColor: "#A6A6A6",
   },

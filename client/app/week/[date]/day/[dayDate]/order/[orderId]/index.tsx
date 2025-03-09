@@ -1,11 +1,10 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import React from "react";
 import Header from "../../../../../../../components/Header";
-import OrderCard from "../../../../../../../components/OrderCard";
 import Button from "../../../../../../../components/Button";
 import { useLocalSearchParams } from "expo-router";
 import useFetch from "../../../../../../../hooks/useFetch";
-import OrderC from "../../../../../../../components/Order";
+import Order from "../../../../../../../components/Order";
 import {
   IOrder,
   OrderParams,
@@ -13,8 +12,13 @@ import {
 } from "../../../../../../../types/order";
 import { getOrderByID } from "../../../../../../../api/order";
 import { Worker } from "../../../../../../../types/users";
+import Notes from "../../../../../../../components/Notes";
+import {
+  formatFullUIDate,
+  getDayOfWeek,
+} from "../../../../../../../utils/date";
 
-export default function Order() {
+export default function OrderPage() {
   const { date, dayDate, orderId } = useLocalSearchParams<{
     date: string;
     dayDate: string;
@@ -32,19 +36,11 @@ export default function Order() {
 
   return (
     <View style={styles.container}>
-      <Header>Понедельник 27 января</Header>
+      <Header>{getDayOfWeek(dayDate) + " " + formatFullUIDate(dayDate)}</Header>
       <ScrollView style={styles.info}>
         <View style={styles.list}>
-          <OrderC order={data!.order} workers={data!.workers} />
-          <View style={styles.extra}>
-            <Text style={styles.extra_title}>📌 Примечание:</Text>
-            <Text style={styles.extra_text}>
-              Александра Нужно взять лак со склада Позвонить за час Саня
-              халтурщик укпукпыпыкупе
-              упыкуывпшгфрапшгрыушкщгпршущгырпупргущшгпрщшу ывщшаофщшукпрощукш
-              Дима забирает все деньги
-            </Text>
-          </View>
+          <Order order={data!.order} workers={data!.workers} />
+          <Notes note={data?.order.note || ""} />
           <Button onPress={() => {}} color="#CB4545">
             Назначить
           </Button>
