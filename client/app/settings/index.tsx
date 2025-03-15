@@ -23,13 +23,15 @@ export default function Settings() {
           <Text style={styles.item_text}>Пользователи</Text>
         </View>
       </TouchableOpacity>
-      {/* <View style={styles.item}>
-        <Image
-          style={styles.icon}
-          source={require("../../assets/icons/password.png")}
-        />
-        <Text style={styles.item_text}>Поменять пароль</Text>
-      </View> */}
+      <TouchableOpacity onPress={() => router.push("/settings/addCar")}>
+        <View style={styles.item}>
+          <Image
+            style={styles.icon}
+            source={require("../../assets/icons/users.png")}
+          />
+          <Text style={styles.item_text}>Добавить машину</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }

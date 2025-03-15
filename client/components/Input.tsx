@@ -15,6 +15,7 @@ interface Props {
   defaultValue?: string;
   value: string;
   onChangeText: (text: string) => void;
+  maxLength?: number;
 }
 
 const Input: FunctionComponent<Props> = ({
@@ -23,6 +24,7 @@ const Input: FunctionComponent<Props> = ({
   type = "default",
   value,
   onChangeText,
+  maxLength,
 }) => {
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
@@ -31,6 +33,7 @@ const Input: FunctionComponent<Props> = ({
       <Text style={styles.input_name}>{name}</Text>
       <TextInput
         value={value}
+        maxLength={maxLength}
         onChangeText={(e) => onChangeText(e)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}

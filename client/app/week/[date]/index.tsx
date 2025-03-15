@@ -1,25 +1,15 @@
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Alert,
-  AccessibilityInfo,
-  PixelRatio,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import Day from "../../../components/Day";
 import Header from "../../../components/Header";
 import {
   formatDate,
   formatDayMonthUIDate,
-  formatToUIDate,
   getDayOfWeek,
-  getFormatUIWeek,
   getStartEndWeekDates,
   getWeekByDate,
 } from "../../../utils/date";
 import Button from "../../../components/Button";
-import { router, useLocalSearchParams, useRouter } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { getOrdersQuantity } from "../../../api/order";
 import useFetch from "../../../hooks/useFetch";
 import {

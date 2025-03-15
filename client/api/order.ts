@@ -42,6 +42,29 @@ export const getAllUsers = async (): Promise<UsersResponse> => {
   }
 };
 
+interface ICar {
+  carname: string;
+  driver_id: string;
+  color: string;
+  telegram_id: string;
+  chat_id: string;
+}
+
+export const addCar = async (car: ICar) => {
+  try {
+    await axios.post(`http://${BASE_URL}:10000/car`, car, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    Alert.alert("Успех", "Машина успешно добавлена!");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
 export const sendOrderToDriver = async (order: IOrderSend) => {
   try {
     await axios.post(`http://${BASE_URL}:10000/orders/send`, order, {
@@ -165,6 +188,25 @@ export const getWorkersDrivers = async (params?: DayDateParams) => {
   } catch (err) {
     Alert.alert("Ошибка", "Не удалось загрузить данные!");
     return { workers: [], drivers: [] };
+  }
+};
+
+export const getDriversWithoutCar = async () => {
+  try {
+    const response = await axios.get<{ id: string; username: string }[]>(
+      `http://${BASE_URL}:10000/users/drivers`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (err) {
+    Alert.alert("Ошибка", "Не удалось загрузить данные!");
+    return [];
   }
 };
 
