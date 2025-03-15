@@ -46,8 +46,8 @@ interface ICar {
   carname: string;
   driver_id: string;
   color: string;
-  telegram_id: string;
-  chat_id: string;
+  telegram_id: number;
+  chat_id: number;
 }
 
 export const addCar = async (car: ICar) => {

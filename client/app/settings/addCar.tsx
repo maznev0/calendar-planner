@@ -51,7 +51,8 @@ export default function AddCarPage() {
   const handleAddCar = async () => {
     const carFetch = {
       ...car,
-      telegram_id: car.chat_id,
+      chat_id: parseInt(car.chat_id),
+      telegram_id: parseInt(car.chat_id),
     };
     await addCar(carFetch);
     router.back();
@@ -90,6 +91,7 @@ export default function AddCarPage() {
             value={car.chat_id}
             onChangeText={(e) => setCar({ ...car, chat_id: e })}
             maxLength={10}
+            type="numeric"
           />
           <SelectList
             setSelected={(e: string) => setCar({ ...car, color: e })}
