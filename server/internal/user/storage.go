@@ -11,8 +11,9 @@ type Repository interface {
 	Create(ctx context.Context, user *User) error
 	GetAll(ctx context.Context) ([]User, error)
 	GetWorkersAndDrivers(ctx context.Context, date string) ([]Drivers, []Workers, error)
+	GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error)
 	//GetDrivers(ctx context.Context) ([]User, error)
-	GetById(ctx context.Context, id string) (User, error)
+	//GetById(ctx context.Context, id string) (User, error)
 	//Update(ctx context.Context, user User) error
 	//Delete(ctx context.Context, id string) error
 }
@@ -127,10 +128,46 @@ func (r *PostgresRepository) GetWorkersAndDrivers(ctx context.Context, date stri
 	return drivers, workers, nil
 }
 
+func (r *PostgresRepository) GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error) {
+	query := `
+		SELECT u.id, u.username 
+		FROM USERS u
+		LEFT JOIN CARS c ON u.id = c.driver_id
+		WHERE c.driver_id IS NULL
+		AND u.user_role = 'driver'
+	`
 
-func (r *PostgresRepository) GetById(ctx context.Context, id string) (User, error) {
-	return User{}, nil
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		r.logger.Errorf("Failed to fetch drivers without car: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var drivers []DriversWithoutCar
+
+	for rows.Next() {
+		var driver DriversWithoutCar
+		if err := rows.Scan(&driver.Id, &driver.Username); err != nil {
+			r.logger.Errorf("Failed to scan driver row: %v", err)
+			return nil, err
+		}
+		drivers = append(drivers, driver)
+	}
+
+	if err = rows.Err(); err != nil {
+		r.logger.Errorf("Error iterating over drivers without car: %v", err)
+		return nil, err
+	}
+
+	return drivers, nil
 }
+
+
+
+// func (r *PostgresRepository) GetById(ctx context.Context, id string) (User, error) {
+// 	return User{}, nil
+// }
 
 // func (r *PostgresRepository) Update(ctx context.Context, user User) error {
 // 	return nil

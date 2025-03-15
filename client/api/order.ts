@@ -20,7 +20,7 @@ import {
 } from "../types/order";
 import { DayDateParams } from "../types/date";
 
-const BASE_URL = "100.78.79.198";
+const BASE_URL = "192.168.100.6";
 
 export const getAllUsers = async (): Promise<UsersResponse> => {
   try {

@@ -45,7 +45,7 @@ export default function OrderPage() {
         workername: w.workername,
       })),
     });
-    await updateOrder();
+    router.back();
   };
 
   if (isLoading) {

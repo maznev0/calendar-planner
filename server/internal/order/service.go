@@ -11,6 +11,7 @@ type Service interface {
 	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
 	Create(ctx context.Context, order *Order, workers []worker.Worker) error
 	Update(ctx context.Context, order Order) error
+	UpdateOrderState(ctx context.Context, orderId, newState string) error
 }
 
 type service struct {
@@ -39,4 +40,8 @@ func (s *service) Create(ctx context.Context, order *Order, workers []worker.Wor
 
 func (s *service) Update(ctx context.Context, order Order) error {
 	return s.repo.Update(ctx, order)
+}
+
+func (s *service) UpdateOrderState(ctx context.Context, orderId, newState string) error {
+	return s.repo.UpdateOrderState(ctx, orderId, newState)
 }

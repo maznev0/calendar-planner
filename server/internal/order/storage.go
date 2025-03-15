@@ -15,6 +15,7 @@ type Repository interface {
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
 	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
 	Update(ctx context.Context, order Order) error
+	UpdateOrderState(ctx context.Context, orderId, newState string) error
 	//Delete(ctx context.Context, id string) error
 }
 
@@ -79,6 +80,17 @@ func (r *PostgresRepository) Update(ctx context.Context, order Order) error {
 		return err
 	}
 
+	return nil
+}
+
+func (r *PostgresRepository) UpdateOrderState(ctx context.Context, orderId, newState string) error {
+	query := `UPDATE ORDERS SET order_state = $1 WHERE id = $2`
+
+	_, err := r.db.Exec(ctx, query, newState, orderId) 
+	if err != nil {
+		r.logger.Errorf("Failed to update order state: %v", err)
+		return err
+	}
 	return nil
 }
 

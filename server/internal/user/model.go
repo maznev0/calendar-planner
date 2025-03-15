@@ -20,3 +20,8 @@ type Workers struct {
 	Username string `json:"username"`
 	UserRole string `json:"user_role"`
 }
+
+type DriversWithoutCar struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+}

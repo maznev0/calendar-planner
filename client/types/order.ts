@@ -82,7 +82,7 @@ export interface IOrderUpdate {
 }
 
 export interface IOrder {
-  order_id: string;
+  id: string;
   price: number;
   meters: number;
   order_date: string;

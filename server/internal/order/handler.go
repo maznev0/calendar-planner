@@ -148,7 +148,7 @@ func (h *handler) GetById(w http.ResponseWriter, r *http.Request, params httprou
 func (h *handler) SendOrder(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var payload struct {
 		Order struct {
-			OrderID      string  `json:"order_id"`
+			OrderId      string  `json:"id"`
 			OrderDate    string  `json:"order_date"`
 			OrderAddress string  `json:"order_address"`
 			PhoneNumber  string  `json:"phone_number"`
@@ -168,19 +168,32 @@ func (h *handler) SendOrder(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
+	orderId := payload.Order.OrderId
+	h.logger.Infof("order id: %s", orderId)
+	ctx := r.Context()
+
 	orderData, err := json.Marshal(payload)
 	if err != nil {
+		h.service.UpdateOrderState(ctx, orderId, "Ошибка отправления")
 		h.respondWithError(w, http.StatusInternalServerError, "Failed to encode order")
 		return
 	}
 
 	if err := h.natsConn.Publish("new_order", orderData); err != nil {
+		h.service.UpdateOrderState(ctx, orderId, "Ошибка отправления")
 		h.respondWithError(w, http.StatusInternalServerError, "Failed to publish order")
 		return
 	}
 
+	if err := h.service.UpdateOrderState(ctx, orderId, "отправлено"); err != nil {
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to update order status")
+		return
+	}
+
 	h.respondWithJSON(w, http.StatusOK, map[string]string{"message": "Order sent successfully"})
+	h.logger.Info("Order sent successfully.")
 }
+
 
 
 func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {

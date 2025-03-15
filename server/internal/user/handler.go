@@ -24,6 +24,7 @@ func NewHandler(logger *logging.Logger, service Service) handlers.Handler {
 func (h *handler) Register(router *httprouter.Router) {
 	router.GET("/users/all", h.GetAll)
 	router.GET("/users/workers&drivers", h.GetWorkersAndDrivers)
+	router.GET("/users/drivers", h.GetDriversWithoutCar)
 	//router.GET("/users/:id", h.GetByID)
 	router.POST("/users", h.Create)
 	//router.PUT("/users/:id", h.Update)
@@ -64,6 +65,19 @@ func (h *handler) GetWorkersAndDrivers(w http.ResponseWriter, r *http.Request, p
 	h.respondWithJSON(w, http.StatusOK, response)
 }
 
+func (h *handler) GetDriversWithoutCar(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	ctx := r.Context()
+
+	drivers, err := h.service.GetDriversWithoutCar(ctx)
+	if err != nil {
+		h.logger.Errorf("Failed to get drivers without car: %v", err)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to fetch drivers without cars")
+		return
+	}
+
+	h.respondWithJSON(w, http.StatusOK, drivers)
+	h.logger.Info("Get Drivers Without A Car successfully working.")
+}
 
 
 func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {

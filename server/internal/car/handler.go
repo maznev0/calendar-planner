@@ -44,6 +44,7 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Car created successfully"))
+	h.logger.Info("Car created.")
 }
 
 func (h *handler) GetAll(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
