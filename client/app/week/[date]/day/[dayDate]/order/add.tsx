@@ -23,7 +23,6 @@ import {
   formatDayMonthUIDate,
   getDayOfWeek,
 } from "../../../../../../utils/date";
-import MultiSelectDropdown from "../../../../../../components/MultiSelectDropdown";
 
 type DATE = string;
 
