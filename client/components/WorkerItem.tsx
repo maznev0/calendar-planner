@@ -1,11 +1,15 @@
 import { View, StyleSheet } from "react-native";
 import Text from "./Text";
 
-export default function WorkerItem() {
+interface Props {
+  name: string;
+}
+
+export default function WorkerItem({ name }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.icon}>👷</Text>
-      <Text style={styles.name}>Даник педик</Text>
+      <Text style={styles.name}>{name}</Text>
     </View>
   );
 }

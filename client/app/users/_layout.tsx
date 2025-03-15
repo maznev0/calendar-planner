@@ -22,9 +22,9 @@ export default function Layout() {
                 source={require("../../assets/icons/calendar.png")}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push("/settings")}>
+            {/* <TouchableOpacity onPress={() => router.push("/settings")}>
               <Image source={require("../../assets/icons/menu.png")} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           <View style={styles.date}>
             <Text style={styles.date_text}>Пользователи</Text>

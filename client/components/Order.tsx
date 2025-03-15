@@ -1,13 +1,10 @@
-import { router, useLocalSearchParams } from "expo-router";
-import { View, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import Text from "./Text";
 import { STATE_COLOR } from "../constants/order";
 import { IOrder } from "../types/order";
-import { Worker } from "../types/users";
+import { Linking, StyleSheet, View } from "react-native";
 
 interface Props {
   order: IOrder;
-  workers: Worker[];
 }
 
 function Order({ order }: Props) {
@@ -25,38 +22,38 @@ function Order({ order }: Props) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.top}>
-        <Text style={styles.top_text}>📍 {order_address}</Text>
+      <View style={styles.header}>
+        <Text style={styles.address}>📍 {order_address}</Text>
         <Text
-          style={[styles.top_text, { fontStyle: "italic" }]}
+          style={styles.phone}
           onPress={() => Linking.openURL(`tel:${phone_number}`)}
         >
           📞 {phone_number}
         </Text>
       </View>
       <View style={styles.bottom}>
-        <View style={styles.left}>
-          {/* <Text style={styles.worker}>👷‍♂️ {worker_names?.join(", ") || ""}</Text> */}
-          <View style={styles.driver_item}>
-            <View style={styles.driver_name}>
-              <View
-                style={[
-                  styles.car_color,
-                  {
-                    backgroundColor: car_color,
-                  },
-                ]}
-              />
-              <Text style={styles.driver_text}>{drivername}</Text>
-            </View>
-            <View style={styles.color} /> {drivername}
-          </View>
+        <View style={styles.driver_item}>
+          {drivername.length && (
+            <>
+              <View style={styles.driver}>
+                <View
+                  style={[
+                    styles.car_color,
+                    {
+                      backgroundColor: car_color,
+                    },
+                  ]}
+                />
+                <Text style={styles.driver_name}>{drivername}</Text>
+              </View>
+            </>
+          )}
         </View>
         <View style={styles.right}>
           <Text style={styles.money}>
             {meters} - {price} BYN
           </Text>
-          <Text style={[styles.type, { color: STATE_COLOR[order_state] }]}>
+          <Text style={[styles.state, { color: STATE_COLOR[order_state] }]}>
             {order_state}
           </Text>
         </View>
@@ -68,7 +65,7 @@ function Order({ order }: Props) {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    height: 158,
+    height: "auto",
     backgroundColor: "#252525",
     borderRadius: 20,
 
@@ -76,34 +73,49 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
 
     flexDirection: "column",
-    justifyContent: "space-between",
-
-    marginBottom: 12,
+    gap: 10,
   },
-  top: {
+  header: {
     width: "100%",
     flexDirection: "column",
     gap: 9,
   },
-  top_text: {
+  address: {
+    maxWidth: "100%",
+    fontSize: 25,
+    color: "#E4D478",
+  },
+  phone: {
     maxWidth: "100%",
     fontSize: 20,
     color: "#E4D478",
+    fontStyle: "italic",
   },
   bottom: {
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
-  left: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: 16,
+
+  driver_item: {
+    width: "30%",
+    alignSelf: "flex-end",
   },
-  worker: {
-    fontSize: 18,
+  driver: {
+    flexDirection: "row",
+    gap: 5,
+    alignItems: "center",
+  },
+  driver_name: {
+    fontSize: 16,
+    fontWeight: 200,
     color: "#fff",
+    width: "100%",
+    textAlign: "left",
   },
+  car_color: { width: 10, height: 10, borderRadius: "50%" },
+
   color: {
     width: 9,
     height: 9,
@@ -111,48 +123,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#006DEA",
     marginRight: 9,
   },
-  driver: {
-    fontSize: 15,
-    fontWeight: 200,
-    color: "#fff",
 
-    opacity: 0.6,
-  },
-  driver_item: {
-    width: "100%",
-    height: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  driver_text: {
-    fontSize: 15,
-    fontWeight: 200,
-    color: "#fff",
-    width: "100%",
-    // fontSize: 20,
-    // color: "#fff",
-    // fontWeight: 300,
-    textAlign: "left",
-  },
-  car_color: { width: 10, height: 10, borderRadius: "50%" },
-  driver_name: {
-    width: "70%",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-  },
   right: {
     flexDirection: "column",
     alignItems: "flex-end",
-    gap: 16,
+    gap: 10,
   },
   money: {
     fontSize: 18,
     fontWeight: 300,
     color: "#FFF",
   },
-  type: {
+  state: {
     fontSize: 16,
     fontWeight: 200,
     color: "#919ED8",

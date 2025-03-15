@@ -14,7 +14,7 @@ type Repository interface {
 	GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error)
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
 	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
-	//Update(ctx context.Context, order Order) error
+	Update(ctx context.Context, order Order) error
 	//Delete(ctx context.Context, id string) error
 }
 
@@ -54,8 +54,35 @@ func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers [
 		}
 	}
 
+	queryPayment := `INSERT INTO PAYMENTS (order_id, driver_id, total_price, driver_price, polish, other_price) 
+		VALUES ($1, $2, 0, 0, 0, 0)`
+	_, err = tx.Exec(ctx, queryPayment, orderId, order.DriverId)
+	if err != nil {
+		return err
+	}
+
 	return tx.Commit(ctx)
 }
+
+func (r *PostgresRepository) Update(ctx context.Context, order Order) error {
+	query := `
+		UPDATE orders
+		SET order_date = $1, order_address = $2, phone_number = $3, meters = $4, 
+		    price = $5, note = $6, order_state = $7
+		WHERE id = $8
+	`
+	_, err := r.db.Exec(ctx, query, order.Date, order.Address, order.PhoneNumber, order.Meters,
+		order.Price, order.Note, order.OrderState, order.Id)
+	
+	if err != nil {
+		r.logger.Errorf("Failed to update order with ID %s: %v", order.Id, err)
+		return err
+	}
+
+	return nil
+}
+
+
 
 func (r *PostgresRepository) GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error) {
 	query := `
@@ -164,27 +191,32 @@ func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, []W
 
 	// Получение заказа
 	queryOrder := `SELECT o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, o.meters, o.price, o.driver_id, 
-		u.username AS driver_name, c.color, o.note, o.order_state FROM orders o
+		u.username AS driver_name, c.color, c.chat_id, o.note, o.order_state FROM orders o
 		JOIN USERS u ON o.driver_id = u.id 
 		LEFT JOIN cars c ON o.driver_id = c.driver_id WHERE o.id = $1
 		`
 	row := r.db.QueryRow(ctx, queryOrder, id)
-	if err := row.Scan(&order.Id, &order.Date, &order.Address, &order.PhoneNumber, &order.Meters, &order.Price, &order.DriverId, &order.Drivername, &order.CarColor, &order.Note, &order.OrderState); err != nil {
+	if err := row.Scan(&order.Id, &order.Date, &order.Address, &order.PhoneNumber, &order.Meters, &order.Price, &order.DriverId, &order.Drivername, &order.CarColor, &order.ChatId, &order.Note, &order.OrderState); err != nil {
+		r.logger.Errorf("Failed to scan order: %v", err)
 		return Order{}, nil, Payments{}, err
 	}
 
 	// Получение работников
-	queryWorkers := `SELECT u.username, ow.worker_payment FROM order_workers ow 
-		JOIN users u ON ow.worker_id = u.id WHERE ow.order_id = $1`
+	queryWorkers := `SELECT ow.worker_id, u.username, ow.worker_payment 
+	    FROM order_workers ow 
+	    JOIN users u ON ow.worker_id = u.id 
+	    WHERE ow.order_id = $1`
 	rows, err := r.db.Query(ctx, queryWorkers, id)
 	if err != nil {
+		r.logger.Errorf("Failed to get workers for order: %v", err)		
 		return order, nil, payments, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var worker Worker
-		if err := rows.Scan(&worker.Workername, &worker.WorkerPayment); err != nil {
+		if err := rows.Scan(&worker.WorkerId, &worker.Workername, &worker.WorkerPayment); err != nil {			
+			r.logger.Errorf("Failed to scan workers: %v", err)
 			return order, nil, payments, err
 		}
 		workers = append(workers, worker)

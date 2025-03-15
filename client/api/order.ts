@@ -1,9 +1,15 @@
 import axios from "axios";
 import { Alert } from "react-native";
-import { WorkersDriversResponse } from "../types/users";
+import {
+  UserFetch,
+  UsersResponse,
+  WorkersDriversResponse,
+} from "../types/users";
 import {
   IOrder,
   IOrderFetch,
+  IOrderSend,
+  IOrderUpdate,
   OrderCardParams,
   OrderCardResponse,
   OrderParams,
@@ -14,8 +20,71 @@ import {
 } from "../types/order";
 import { DayDateParams } from "../types/date";
 
-const BASE_URL = "192.168.0.108";
-// ! телефон по размеру имени рабочего, адрес шрифт на 1-2 пиккселя больше
+const BASE_URL = "100.78.79.198";
+
+export const getAllUsers = async (): Promise<UsersResponse> => {
+  try {
+    const response = await axios.get<UsersResponse>(
+      `http://${BASE_URL}:10000/users/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    // Alert.alert("Успех", "Заказы на неделю пришли!");
+
+    return response.data;
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+    return [] as UsersResponse;
+  }
+};
+
+export const sendOrderToDriver = async (order: IOrderSend) => {
+  try {
+    await axios.post(`http://${BASE_URL}:10000/orders/send`, order, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    Alert.alert("Заказ успешно отправлен");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
+export const createUser = async (user: UserFetch) => {
+  try {
+    await axios.post(`http://${BASE_URL}:10000/users`, user, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
+export const updateOrder = async (order: IOrderUpdate) => {
+  try {
+    await axios.post(`http://${BASE_URL}:10000/orders/update`, order, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    //Alert.alert("Успех", "Заказ успешно отправлен!");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
 export const addOrder = async (order: IOrderFetch) => {
   try {
     await axios.post(`http://${BASE_URL}:10000/orders`, order, {
@@ -46,7 +115,7 @@ export const getOrdersByDay = async (
       }
     );
 
-    Alert.alert("Успех", "Заказы успешно пришли!");
+    // Alert.alert("Успех", "Заказы успешно пришли!");
 
     return response.data;
   } catch (err: any) {
@@ -69,7 +138,7 @@ export const getOrdersQuantity = async (
         },
       }
     );
-    Alert.alert("Успех", "Заказы на неделю пришли!");
+    // Alert.alert("Успех", "Заказы на неделю пришли!");
 
     return response.data;
   } catch (err: any) {
@@ -103,7 +172,7 @@ export const getOrderByID = async (params?: OrderParams) => {
   const { id } = params || {};
   try {
     const response = await axios.get<OrderResponse>(
-      `http://${BASE_URL}:10000/orders/day${id}`,
+      `http://${BASE_URL}:10000/orders/day/${id}`,
       {
         headers: {
           "Content-Type": "application/json",

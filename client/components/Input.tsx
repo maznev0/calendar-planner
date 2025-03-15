@@ -10,7 +10,8 @@ interface Props {
     | "phone-pad"
     | "numeric"
     | "decimal-pad"
-    | "numbers-and-punctuation";
+    | "numbers-and-punctuation"
+    | "number-pad";
   defaultValue?: string;
   value: string;
   onChangeText: (text: string) => void;

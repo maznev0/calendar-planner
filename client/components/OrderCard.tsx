@@ -2,19 +2,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { View, StyleSheet, TouchableOpacity, Linking } from "react-native";
 import Text from "./Text";
 import { STATE_COLOR } from "../constants/order";
-import { IOrder, OrderState } from "../types/order";
-
-// interface IOrder {
-//   id: string;
-//   order_date: string;
-//   order_address: string;
-//   phone_number: string;
-//   meters: number;
-//   price: number;
-//   order_state: OrsderState;
-//   driver_name: string;
-//   worker_names: string[];
-// }
+import { OrderState } from "../types/order";
 
 interface Props {
   order: {
@@ -26,6 +14,7 @@ interface Props {
     price: number;
     order_state: OrderState;
     driver_name: string;
+    car_color: string;
     worker_names: string[];
   };
 }
@@ -40,6 +29,7 @@ function OrderCard({ order }: Props) {
     price,
     order_state,
     driver_name,
+    car_color,
     worker_names,
   } = order;
   const { date, dayDate } = useLocalSearchParams<{
@@ -47,15 +37,23 @@ function OrderCard({ order }: Props) {
     dayDate: string;
   }>();
 
+  let workersString = "";
+  if (worker_names?.length) {
+    workersString =
+      "👷‍♂️" +
+      worker_names[0] +
+      (worker_names.length - 1 ? ` +${worker_names.length - 1}` : "");
+  }
+
   return (
     <TouchableOpacity
       onPress={() => router.push(`/week/${date}/day/${dayDate}/order/${id}`)}
       style={styles.container}
     >
       <View style={styles.top}>
-        <Text style={styles.top_text}>📍 {order_address}</Text>
+        <Text style={styles.address_text}>📍 {order_address}</Text>
         <Text
-          style={[styles.top_text, { fontStyle: "italic" }]}
+          style={[styles.phone_number, { fontStyle: "italic" }]}
           onPress={() => Linking.openURL(`tel:${phone_number}`)}
         >
           📞 {phone_number}
@@ -63,9 +61,10 @@ function OrderCard({ order }: Props) {
       </View>
       <View style={styles.bottom}>
         <View style={styles.left}>
-          <Text style={styles.worker}>👷‍♂️ {worker_names?.join(", ") || ""}</Text>
+          <Text style={styles.worker}>{workersString}</Text>
           <Text style={styles.driver}>
-            <View style={styles.color} /> {driver_name}
+            <View style={[styles.car_color, { backgroundColor: car_color }]} />{" "}
+            {driver_name}
           </Text>
         </View>
         <View style={styles.right}>
@@ -88,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#252525",
     borderRadius: 20,
 
-    paddingHorizontal: 17,
+    paddingHorizontal: 10,
     paddingVertical: 11,
 
     flexDirection: "column",
@@ -106,6 +105,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "#E4D478",
   },
+  address_text: {
+    fontSize: 25,
+    color: "#E4D478",
+  },
+  phone_number: {
+    maxWidth: "60%",
+    fontSize: 17,
+    color: "#E4D478",
+  },
   bottom: {
     width: "100%",
     flexDirection: "row",
@@ -117,14 +125,14 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   worker: {
+    width: "100%",
     fontSize: 18,
     color: "#fff",
   },
-  color: {
+  car_color: {
     width: 9,
     height: 9,
     borderRadius: "50%",
-    backgroundColor: "#006DEA",
     marginRight: 9,
   },
   driver: {

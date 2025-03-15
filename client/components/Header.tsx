@@ -1,15 +1,23 @@
 import { FunctionComponent } from "react";
-import { StyleSheet, View } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import Text from "./Text";
 
 interface Props {
   children: string;
+  onPress?: () => void;
 }
 
-const Header: FunctionComponent<Props> = ({ children }) => {
+const Header: FunctionComponent<Props> = ({ children, onPress }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{children}</Text>
+      <TouchableOpacity onPress={onPress} activeOpacity={1}>
+        <Text style={styles.text}>{children}</Text>
+      </TouchableOpacity>
     </View>
   );
 };

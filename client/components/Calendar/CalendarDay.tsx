@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableWithoutFeedback, View } from "react-native";
 import React, { FC, memo } from "react";
-import Text from "./Text";
+import Text from "../Text";
 import { useRouter } from "expo-router";
 
 interface Props {

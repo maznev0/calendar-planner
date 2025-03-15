@@ -1,9 +1,16 @@
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableWithoutFeedback, View } from "react-native";
 import React, { useState } from "react";
-import Calendar from "../../components/Calendar";
+import Calendar from "../../components/Calendar/Calendar";
 import Text from "../../components/Text";
+import { useRouter } from "expo-router";
 
 const CalendarPage = () => {
+  const router = useRouter();
+
+  const handlePressToday = () => {
+    router.dismissAll();
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.weekDays}>
@@ -13,8 +20,15 @@ const CalendarPage = () => {
           </Text>
         ))}
       </View>
-
       <Calendar />
+      <TouchableWithoutFeedback onPress={handlePressToday}>
+        <View style={styles.footer}>
+          <Text style={styles.footer_text}>Сегодня</Text>
+        </View>
+      </TouchableWithoutFeedback>
+      {/* <View style={styles.footer}>
+        <Text style={styles.footer_text}>Сегодня</Text>
+      </View> */}
     </View>
   );
 };
@@ -24,6 +38,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#3C3C3C",
     paddingTop: 20,
+    paddingBottom: 10,
   },
   weekDays: {
     flexDirection: "row",
@@ -40,6 +55,20 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     width: "14%",
     textAlign: "center",
+  },
+  footer: {
+    height: 34,
+    paddingTop: 8,
+    borderTopColor: "#A6A6A6",
+    borderTopWidth: 1,
+
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  footer_text: {
+    fontSize: 22,
+    textTransform: "uppercase",
+    color: "#E4D478",
   },
 });
 

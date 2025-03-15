@@ -28,8 +28,8 @@ func NewRepository(db *pgxpool.Pool, logger *logging.Logger) Repository {
 }
 
 func (r *PostgresRepository) Create(ctx context.Context, car *Car, driver_id string) error {
-	query := "INSERT INTO CARS (driver_id, color, carname) VALUES ($1, $2, $3)"
-	_, err := r.db.Exec(ctx, query, driver_id, car.Color, car.Carname)
+	query := "INSERT INTO CARS (driver_id, color, carname, chat_id, telegram_id) VALUES ($1, $2, $3, $4, $5)"
+	_, err := r.db.Exec(ctx, query, driver_id, car.Color, car.Carname, car.ChatId, car.TelegramId)
 	if err != nil {
 		r.logger.Errorf("Failed to create car: %v", err)
 		return err

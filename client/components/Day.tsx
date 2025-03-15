@@ -1,7 +1,17 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { View, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  PixelRatio,
+} from "react-native";
 import Text from "./Text";
-import { formatFullUIDate, getDayOfWeek } from "../utils/date";
+import {
+  formatDayMonthUIDate,
+  formatFullUIDate,
+  getShortDayOfWeek,
+} from "../utils/date";
 
 interface Props {
   dayDate: string;
@@ -23,9 +33,9 @@ export default function Day({ dayDate, orders }: Props) {
     >
       <View style={styles.date}>
         <Text style={styles.weekday}>
-          {getDayOfWeek(dayDate).toUpperCase()}
+          {getShortDayOfWeek(dayDate).toUpperCase()}
         </Text>
-        <Text style={styles.day}>{formatFullUIDate(dayDate)}</Text>
+        <Text style={styles.day}>{formatDayMonthUIDate(dayDate)}</Text>
       </View>
       <View style={styles.orders_block}>
         <Text style={styles.orders}>{orders}</Text>
@@ -36,13 +46,14 @@ export default function Day({ dayDate, orders }: Props) {
 
 const styles = StyleSheet.create({
   container: {
-    height: 90,
+    height: 27 * PixelRatio.get(),
     backgroundColor: "#252525",
     borderRadius: 20,
     borderWidth: 2,
     borderColor: "#252525",
 
-    paddingHorizontal: 17,
+    paddingLeft: 17,
+    paddingRight: 5,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -68,7 +79,11 @@ const styles = StyleSheet.create({
     fontWeight: "300",
   },
   orders_block: {
+    width: 60,
+
     flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
   },
   orders: {
     height: "100%",

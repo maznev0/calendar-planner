@@ -25,8 +25,6 @@ const styles = StyleSheet.create({
 
     paddingHorizontal: 20,
     paddingVertical: 8,
-
-    marginBottom: 12,
   },
   extra_title: {
     fontSize: 20,

@@ -30,13 +30,17 @@ func NewRepository(db *pgxpool.Pool, logger *logging.Logger) Repository {
 }
 
 func (r *PostgresRepository) Create(ctx context.Context, user *User) error {
-	query := "INSERT INTO USERS (username, user_role, telegram_id) VALUES ($1, $2, $3)"
-	_, err := r.db.Exec(ctx, query, user.Username, user.UserRole, user.TelegramId)
+	query := "INSERT INTO USERS (username, user_role) VALUES ($1, $2)"
+	_, err := r.db.Exec(ctx, query, user.Username, user.UserRole)
 	return err
 }
 
 func (r *PostgresRepository) GetAll(ctx context.Context) ([]User, error) {
-	query := "SELECT id, username, user_role, telegram_id FROM users"
+	query := `
+		SELECT u.id, u.username, u.user_role, COALESCE(c.color, '') 
+		FROM users u
+		LEFT JOIN cars c ON u.id = c.driver_id
+	`
 	
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
@@ -48,7 +52,7 @@ func (r *PostgresRepository) GetAll(ctx context.Context) ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.Id, &user.Username, &user.UserRole, &user.TelegramId); err != nil {
+		if err := rows.Scan(&user.Id, &user.Username, &user.UserRole, &user.CarColor); err != nil {
 			r.logger.Errorf("failed to scan row: %v", err)
 			return nil, err
 		}

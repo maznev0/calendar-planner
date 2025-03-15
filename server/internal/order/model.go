@@ -10,6 +10,7 @@ type Order struct {
 	DriverId 	string    `json:"driver_id"`
 	Drivername 	string    `json:"drivername"`
 	CarColor    string    `json:"car_color"`
+	ChatId      int64     `json:"chat_id" binding:"required"`
 	Note 	    string    `json:"note"`
 	OrderState  string    `json:"order_state" binding:"required"`
 }
@@ -18,9 +19,11 @@ type Payments struct {
 	TotalPrice  int `json:"total_price" binding:"required"`
 	DriverPrice int `json:"driver_price" binding:"required"`
 	OtherPrice  int `json:"other_price" binding:"required"`
+	Polish 		int `json:"polish" binding:"required"`
 }
 
 type Worker struct {
+	WorkerId      string `json:"worker_id" binding:"required"`
 	Workername 	  string `json:"workername" binding:"required"`
 	WorkerPayment int    `json:"worker_payment"`
 }

@@ -10,6 +10,7 @@ type Service interface {
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
 	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
 	Create(ctx context.Context, order *Order, workers []worker.Worker) error
+	Update(ctx context.Context, order Order) error
 }
 
 type service struct {
@@ -34,4 +35,8 @@ func (s *service) GetById(ctx context.Context, id string) (Order, []Worker, Paym
 
 func (s *service) Create(ctx context.Context, order *Order, workers []worker.Worker) error {
 	return s.repo.Create(ctx, order, workers)
+}
+
+func (s *service) Update(ctx context.Context, order Order) error {
+	return s.repo.Update(ctx, order)
 }

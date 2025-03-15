@@ -1,17 +1,19 @@
 import { router } from "expo-router";
-import {  View, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import Text from "../../components/Text";
 
 export default function Settings() {
   return (
     <View style={styles.container}>
-      <View style={styles.item}>
-        <Image
-          style={styles.icon}
-          source={require("../../assets/icons/statistics.png")}
-        />
-        <Text style={styles.item_text}>Статистика</Text>
-      </View>
+      <TouchableOpacity onPress={() => router.push("/users/add")}>
+        <View style={styles.item}>
+          <Image
+            style={styles.icon}
+            source={require("../../assets/icons/statistics.png")}
+          />
+          <Text style={styles.item_text}>Добавить пользователя</Text>
+        </View>
+      </TouchableOpacity>
       <TouchableOpacity onPress={() => router.push("/users")}>
         <View style={styles.item}>
           <Image
@@ -21,13 +23,13 @@ export default function Settings() {
           <Text style={styles.item_text}>Пользователи</Text>
         </View>
       </TouchableOpacity>
-      <View style={styles.item}>
+      {/* <View style={styles.item}>
         <Image
           style={styles.icon}
           source={require("../../assets/icons/password.png")}
         />
         <Text style={styles.item_text}>Поменять пароль</Text>
-      </View>
+      </View> */}
     </View>
   );
 }

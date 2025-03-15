@@ -6,50 +6,71 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import React, { useState } from "react";
-import Header from "../../../../../../components/Header";
-import Input from "../../../../../../components/Input";
-import SelectInput from "../../../../../../components/SelectInput";
-import InputArea from "../../../../../../components/InputArea";
-import Button from "../../../../../../components/Button";
-import MultipleSelectInput from "../../../../../../components/MultipleSelectInput";
-import { addOrder, getWorkersDrivers } from "../../../../../../api/order";
-import useFetch from "../../../../../../hooks/useFetch";
-import { WorkersDriversResponse } from "../../../../../../types/users";
-import { IOrderFetch, IOrderState } from "../../../../../../types/order";
+import React, { useEffect, useState } from "react";
+import Header from "../../../../../../../components/Header";
+import Input from "../../../../../../../components/Input";
+import SelectInput from "../../../../../../../components/SelectInput";
+import InputArea from "../../../../../../../components/InputArea";
+import Button from "../../../../../../../components/Button";
+import MultipleSelectInput from "../../../../../../../components/MultipleSelectInput";
+import {
+  addOrder,
+  getOrderByID,
+  getWorkersDrivers,
+  updateOrder,
+} from "../../../../../../../api/order";
+import useFetch from "../../../../../../../hooks/useFetch";
+import { WorkersDriversResponse } from "../../../../../../../types/users";
+import {
+  IOrderFetch,
+  IOrderState,
+  IOrderUpdate,
+  OrderParams,
+  OrderResponse,
+} from "../../../../../../../types/order";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { DayDateParams } from "../../../../../../types/date";
+import { DayDateParams } from "../../../../../../../types/date";
 import {
   formatDayMonthUIDate,
   getDayOfWeek,
-} from "../../../../../../utils/date";
-import MultiSelectDropdown from "../../../../../../components/MultiSelectDropdown";
+} from "../../../../../../../utils/date";
+import Text from "../../../../../../../components/Text";
 
-type DATE = string;
-
-const Add = () => {
-  const { date, dayDate } = useLocalSearchParams<{
+const Edit = () => {
+  const { date, dayDate, orderId } = useLocalSearchParams<{
     date: string;
     dayDate: string;
+    orderId: string;
   }>();
-  const { data } = useFetch<WorkersDriversResponse, DayDateParams>(
-    getWorkersDrivers,
-    {
-      day: dayDate,
-    }
+
+  const { data, isLoading } = useFetch<OrderResponse, OrderParams>(
+    getOrderByID,
+    { id: orderId }
   );
+
   const router = useRouter();
 
-  const [order, setOrder] = useState<IOrderState>({
+  const [order, setOrder] = useState({
     order_address: "",
     phone_number: "+375",
     meters: "",
     price: "",
-    workers: [],
-    driver_id: "",
     note: "",
     order_state: "Ожидает отправки",
   });
+
+  useEffect(() => {
+    if (data) {
+      setOrder({
+        order_address: data.order.order_address || "",
+        phone_number: data.order.phone_number || "+375",
+        meters: String(data.order.meters) || "",
+        price: String(data.order.price) || "",
+        note: data.order.note || "",
+        order_state: data.order.order_state || "Ожидает отправки",
+      });
+    }
+  }, [data]);
 
   const handleChangeText = (field: string, value: string) => {
     setOrder({ ...order, [field]: value });
@@ -63,10 +84,6 @@ const Add = () => {
     if (dotCount === 1 && newValue.split(".")[1].length > 2) return;
 
     handleChangeText("meters", newValue);
-  };
-
-  const handleAddWorker = (value: string[]) => {
-    setOrder({ ...order, workers: value });
   };
 
   const handleSubmit = async () => {
@@ -84,31 +101,27 @@ const Add = () => {
       return;
     }
 
-    const fetchOrder: IOrderFetch = {
-      order: {
-        price: Number(order.price),
-        meters: parseFloat(order.meters),
-        order_date: dayDate,
-        order_address: order.order_address,
-        phone_number: order.phone_number,
-        driver_id: order.driver_id,
-        note: order.note,
-        order_state: order.order_state,
-      },
-      workers: [
-        ...order.workers.map((id) => ({
-          worker_id: id,
-          worker_payment: 0,
-        })),
-      ],
+    const fetchOrder: IOrderUpdate = {
+      id: orderId,
+      price: Number(order.price),
+      meters: parseFloat(order.meters),
+      order_date: dayDate,
+      order_address: order.order_address,
+      phone_number: order.phone_number,
+      note: order.note,
+      order_state: order.order_state,
     };
 
-    // router.push(`/week/${date}/day/${dayDate}`);
-    await addOrder(fetchOrder);
+    await updateOrder(fetchOrder);
     router.dismissAll();
     router.push(`/week/${date}`);
     router.push(`/week/${date}/day/${dayDate}`);
+    router.push(`/week/${date}/day/${dayDate}/order/${orderId}`);
   };
+
+  if (isLoading) {
+    return <Text>LOADING ...</Text>;
+  }
 
   return (
     <TouchableWithoutFeedback
@@ -141,40 +154,26 @@ const Add = () => {
               name="BYN"
               type="number-pad"
               value={order.price}
-              onChangeText={(e) => handleChangeText("price", e)}
+              onChangeText={(e: string) => handleChangeText("price", e)}
             />
             <Input
               placeholder="Адрес"
               name="📍"
               value={order.order_address}
-              onChangeText={(e) => handleChangeText("order_address", e)}
+              onChangeText={(e: string) => handleChangeText("order_address", e)}
             />
             <Input
               placeholder="+375"
               name="📞"
               type="phone-pad"
               value={order.phone_number}
-              onChangeText={(e) => handleChangeText("phone_number", e)}
-            />
-            <SelectInput
-              name=""
-              placeholder="Водитель"
-              data={data?.drivers || []}
-              value={order.driver_id}
-              onChange={(value) => {
-                handleChangeText("driver_id", value);
-              }}
-            />
-            <MultipleSelectInput
-              placeholder="Рабочий"
-              data={[...(data?.workers ?? [])]}
-              onChange={handleAddWorker}
+              onChangeText={(e: string) => handleChangeText("phone_number", e)}
             />
             <InputArea
               name="📌"
               placeholder="Примечания"
               value={order.note}
-              onChangeText={(e) => handleChangeText("note", e)}
+              onChangeText={(e: string) => handleChangeText("note", e)}
             />
             <View
               style={{
@@ -185,13 +184,13 @@ const Add = () => {
             />
           </View>
         </ScrollView>
-        <Button onPress={handleSubmit}>Добавить</Button>
+        <Button onPress={handleSubmit}>Изменить</Button>
       </View>
     </TouchableWithoutFeedback>
   );
 };
 
-export default Add;
+export default Edit;
 
 const styles = StyleSheet.create({
   container: {

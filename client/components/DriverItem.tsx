@@ -1,11 +1,16 @@
 import { View, StyleSheet } from "react-native";
 import Text from "./Text";
 
-export default function DriverItem() {
+interface Props {
+  name: string;
+  carColor: string;
+}
+
+export default function DriverItem({ name, carColor }: Props) {
   return (
     <View style={styles.container}>
-      <View style={styles.color} />
-      <Text style={styles.name}>Владос хуесос</Text>
+      <View style={[styles.color, { backgroundColor: carColor }]} />
+      <Text style={styles.name}>{name}</Text>
     </View>
   );
 }
@@ -28,7 +33,6 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: "50%",
-    backgroundColor: "#EA8D00",
   },
   name: {
     fontSize: 24,

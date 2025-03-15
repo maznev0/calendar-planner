@@ -1,79 +1,34 @@
-import {
-  Alert,
-  Pressable,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { StyleSheet, View } from "react-native";
 import React, { FunctionComponent, useState } from "react";
-import {
-  MultipleSelectList,
-  SelectList,
-} from "react-native-dropdown-select-list";
-import Text from "./Text";
+import { MultipleSelectList } from "react-native-dropdown-select-list";
 import { IDriver, IWorker } from "../types/users";
 
 interface Props {
   placeholder: string;
-  // name: string;
-  // value: string;
+
   data: (IWorker | IDriver)[];
   onChange: (value: any) => void;
 }
 
-// const data = [
-//   { key: 1, value: `Владос` },
-//   { key: 2, value: "Александр" },
-//   { key: 3, value: "Дмитрий" },
-//   { key: 4, value: "Егор" },
-//   { key: 5, value: "Даниил" },
-// ];
-
 const MultipleSelectInput: FunctionComponent<Props> = ({
-  // name,
   placeholder,
   data,
   onChange,
 }) => {
-  const formattedData = data.map((e) => {
-    if (e.user_role === "driver") {
-      return {
-        key: e.id,
-        value: (
-          <View style={styles.driver_item}>
-            <View style={styles.driver_name}>
-              <View
-                style={[
-                  styles.car_color,
-                  {
-                    backgroundColor: e.car_color,
-                  },
-                ]}
-              />
-              <Text style={styles.driver_text}>{e.username}</Text>
-            </View>
-            <Text style={styles.orders}>{e.order_quantity}</Text>
-          </View>
-        ),
-      };
-    } else {
-      return {
-        key: e.id,
-        value: `👷‍♂️ ${e.username}`,
-      };
-    }
-  });
+  const formattedData = data.map((e) => ({
+    key: e.id,
+    value: `👷‍♂️ ${e.username}`,
+  }));
 
-  const [worker, setWorker] = useState([]);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   return (
     <View>
       <MultipleSelectList
         save="key"
-        setSelected={setWorker}
+        setSelected={setSelectedKeys}
         onSelect={() => {
-          // console.log(worker);
-          onChange(worker);
+          onChange(selectedKeys);
         }}
         data={formattedData}
         placeholder={placeholder}
@@ -88,8 +43,8 @@ const MultipleSelectInput: FunctionComponent<Props> = ({
         badgeStyles={styles.badge_box}
         badgeTextStyles={styles.badgeTextStyles}
         checkBoxStyles={{ display: "none" }}
-        label=""
-        labelStyles={{ display: "none" }}
+        labelStyles={{ display: "none", fontSize: 0, color: "#FFF" }}
+        label=" "
       />
     </View>
   );
@@ -98,36 +53,6 @@ const MultipleSelectInput: FunctionComponent<Props> = ({
 export default MultipleSelectInput;
 
 const styles = StyleSheet.create({
-  driver_item: {
-    width: "100%",
-    height: "100%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-
-    // borderWidth: 1,
-    // borderColor: "#FFF",
-  },
-  driver_text: {
-    width: "100%",
-    fontSize: 20,
-    color: "#fff",
-    fontWeight: 300,
-    textAlign: "left",
-  },
-  car_color: { width: 10, height: 10, borderRadius: "50%" },
-  driver_name: {
-    width: "70%",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  orders: {
-    fontWeight: 300,
-    fontSize: 23,
-    color: "#FFF",
-    textAlign: "center",
-  },
   boxStyles: {
     width: "100%",
     minHeight: 51,
@@ -155,7 +80,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemStyles: {
     width: "100%",
-    height: 51,
+    minHeight: 51,
   },
   dropdownTextStyles: {
     width: "100%",
@@ -164,11 +89,12 @@ const styles = StyleSheet.create({
     fontWeight: 300,
   },
   badge_box: {
-    width: 150,
     flexDirection: "row",
     alignItems: "center",
+
+    backgroundColor: "#3C3C3C",
   },
   badgeTextStyles: {
-    fontSize: 13,
+    fontSize: 20,
   },
 });

@@ -5,12 +5,14 @@ import (
 	"server/internal/car"
 	"server/internal/config"
 	"server/internal/order"
+	"server/internal/payments"
 	"server/internal/user"
 	"server/pkg/database"
 	"server/pkg/logging"
 	"server/pkg/server"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/nats-io/nats.go"
 	"github.com/rs/cors"
 )
 
@@ -35,8 +37,13 @@ func main() {
 		logger.Fatalf("%v", err)
 	}
 	//
-
-	
+	// creating Nats Connection
+	natsConn, err := nats.Connect(nats.DefaultURL)
+	if err != nil {
+		logger.Fatalf("%v", err)
+	}
+	defer natsConn.Close()
+	//
 
 	logger.Info("register user handler")
 	repoUser := user.NewRepository(pool, logger)
@@ -47,8 +54,14 @@ func main() {
 	logger.Info("register order handler")
 	repoOrder := order.NewRepository(pool, logger)
 	serviceOrder := order.NewService(repoOrder)
-	handlerOrder := order.NewHandler(logger, serviceOrder)
+	handlerOrder := order.NewHandler(logger, serviceOrder, natsConn)
 	handlerOrder.Register(router)
+
+	logger.Info("register order handler")
+	repoPayments := payments.NewRepository(pool, logger)
+	servicePayments := payments.NewService(repoPayments)
+	handlerPayments := payments.NewHandler(logger, servicePayments)
+	handlerPayments.Register(router)
 
 	logger.Info("register car handler")
 	repoCar := car.NewRepository(pool, logger)

@@ -1,18 +1,31 @@
 import { router } from "expo-router";
-import {  View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import DriverItem from "../../components/DriverItem";
 import WorkerItem from "../../components/WorkerItem";
+import useFetch from "../../hooks/useFetch";
+import { getAllUsers } from "../../api/order";
 
 export default function Users() {
+  const { isLoading, data } = useFetch(getAllUsers);
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        <DriverItem />
-        <DriverItem />
-        <DriverItem />
-        <WorkerItem />
-        <WorkerItem />
-        <WorkerItem />
+        {data &&
+          data.map((user) => {
+            switch (user.user_role) {
+              case "driver":
+                return (
+                  <DriverItem
+                    name={user.username}
+                    carColor={user.car_color}
+                    key={user.id}
+                  />
+                );
+              case "worker":
+                return <WorkerItem name={user.username} key={user.id} />;
+            }
+          })}
       </ScrollView>
     </View>
   );

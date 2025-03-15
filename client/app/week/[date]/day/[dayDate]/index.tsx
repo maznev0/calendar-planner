@@ -7,6 +7,7 @@ import useFetch from "../../../../../hooks/useFetch";
 import { getOrdersByDay } from "../../../../../api/order";
 import { OrderCardParams, OrderCardResponse } from "../../../../../types/order";
 import Text from "../../../../../components/Text";
+import { formatDayMonthUIDate, getDayOfWeek } from "../../../../../utils/date";
 
 export default function Day() {
   const { date, dayDate } = useLocalSearchParams<{
@@ -31,7 +32,9 @@ export default function Day() {
 
   return (
     <View style={styles.container}>
-      <Header>Понедельник 27 января</Header>
+      <Header>
+        {getDayOfWeek(dayDate) + " " + formatDayMonthUIDate(dayDate)}
+      </Header>
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
         {orders?.map((order) => (
           <OrderCard key={order.id} order={order} />

@@ -1,5 +1,5 @@
 import { STATE_COLOR } from "../constants/order";
-import { Worker } from "./users";
+import { Worker, WorkerFetch, WorkerResponse, WorkerSendFetch } from "./users";
 
 export interface IOrderFetch {
   order: {
@@ -12,7 +12,7 @@ export interface IOrderFetch {
     note: string;
     order_state: string;
   };
-  workers: Worker[];
+  workers: WorkerFetch[];
 }
 
 export interface IOrderState {
@@ -45,6 +45,7 @@ export type OrderCardResponse = {
   price: number;
   order_state: OrderState;
   driver_name: string;
+  car_color: string;
   worker_names: string[];
 }[];
 
@@ -60,22 +61,39 @@ export interface OrderParams {
 
 export interface OrderResponse {
   order: IOrder;
-  workers: Worker[];
+  workers: WorkerResponse[];
   payments: Payments;
 }
 
-export interface IOrder {
+export interface IOrderSend {
+  order: IOrder;
+  workers: WorkerSendFetch[];
+}
+
+export interface IOrderUpdate {
   id: string;
   price: number;
   meters: number;
   order_date: string;
   order_address: string;
   phone_number: string;
-  driver_id: string;
-  drivername: string;
-  car_color: string;
   note: string;
-  order_state: OrderState;
+  order_state: string;
+}
+
+export interface IOrder {
+  order_id: string;
+  price: number;
+  meters: number;
+  order_date: string;
+  order_address: string;
+  phone_number: string;
+  driver_id?: string;
+  drivername?: string;
+  car_color?: string;
+  note: string;
+  order_state?: OrderState;
+  chat_id: number;
 }
 
 export interface Payments {

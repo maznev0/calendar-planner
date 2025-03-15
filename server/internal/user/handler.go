@@ -82,6 +82,8 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("User created"))
+	h.logger.Info("User created.")
+
 }
 
 func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {

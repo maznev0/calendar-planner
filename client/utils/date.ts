@@ -19,6 +19,15 @@ export function formatFullUIDate(date: Date | string) {
   });
 }
 
+export function formatDayMonthUIDate(date: Date | string) {
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+
+  return dateObj.toLocaleDateString("ru-RU", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export const formatDate = (date: Date): string => {
   return date.toISOString().split("T")[0];
 };
@@ -69,7 +78,23 @@ export function getStartEndWeekDates(date: Date) {
   return getFormatWeek(date, formatDate);
 }
 
-const daysOfWeek = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
+const shortDaysOfWeek = ["ВС", "ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ"];
+
+export function getShortDayOfWeek(dateString: string): string {
+  const date = new Date(dateString);
+  const dayIndex = date.getDay();
+  return shortDaysOfWeek[dayIndex];
+}
+
+const daysOfWeek = [
+  "Воскресенье",
+  "Понедельник",
+  "Вторник",
+  "Среда",
+  "Четверг",
+  "Пятница",
+  "Суббота",
+];
 
 export function getDayOfWeek(dateString: string): string {
   const date = new Date(dateString);

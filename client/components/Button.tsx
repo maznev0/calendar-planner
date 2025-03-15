@@ -1,5 +1,5 @@
 import { FunctionComponent } from "react";
-import { TouchableOpacity,  StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import Text from "./Text";
 
 interface Props {
@@ -29,8 +29,6 @@ const styles = StyleSheet.create({
 
     alignItems: "center",
     justifyContent: "center",
-
-    marginTop: 5,
   },
   text: {
     width: "100%",
