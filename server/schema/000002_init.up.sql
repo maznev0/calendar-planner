@@ -36,11 +36,12 @@ CREATE TABLE ORDER_WORKERS (
 
 CREATE TABLE PAYMENTS (
     order_id UUID PRIMARY KEY,
-    driver_id UUID NOT NULL,
+    driver_id UUID,
     total_price INT NOT NULL,
     driver_price INT NOT NULL,
     polish INT NOT NULL,
     other_price INT NOT NULL,
+    profit INT NOT NULL,
 
     FOREIGN KEY (order_id) REFERENCES ORDERS(id) ON DELETE CASCADE,
     FOREIGN KEY (driver_id) REFERENCES USERS(id) ON DELETE CASCADE
@@ -50,8 +51,7 @@ CREATE TABLE CARS (
     driver_id UUID PRIMARY KEY,
     color VARCHAR(7) NOT NULL,
     carname VARCHAR(20) NOT NULL,
-    chat_id BIGINT UNIQUE,
-    telegram_id BIGINT UNIQUE NOT NULL,
+    chat_id BIGINT UNIQUE NOT NULL,
 
     FOREIGN KEY (driver_id) REFERENCES USERS(id) ON DELETE CASCADE
 );

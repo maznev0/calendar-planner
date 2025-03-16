@@ -15,7 +15,7 @@ type Repository interface {
 	//GetDrivers(ctx context.Context) ([]User, error)
 	//GetById(ctx context.Context, id string) (User, error)
 	//Update(ctx context.Context, user User) error
-	//Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type PostgresRepository struct {
@@ -35,6 +35,60 @@ func (r *PostgresRepository) Create(ctx context.Context, user *User) error {
 	_, err := r.db.Exec(ctx, query, user.Username, user.UserRole)
 	return err
 }
+
+func (r *PostgresRepository) Delete(ctx context.Context, id string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		r.logger.Errorf("Failed to start transaction: %v", err)
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	query1 := `UPDATE ORDERS SET driver_id = NULL WHERE driver_id = $1`
+	_, err = tx.Exec(ctx, query1, id)
+	if err != nil {
+		r.logger.Errorf("Failed to nullify driver_id in orders: %v", err)
+		return err
+	}
+
+	query2 := `UPDATE ORDER_WORKERS SET worker_id = NULL WHERE worker_id = $1`
+	_, err = tx.Exec(ctx, query2, id)
+	if err != nil {
+		r.logger.Errorf("Failed to nullify user from order_workers: %v", err)
+		return err
+	}
+
+	query3 := `DELETE FROM CARS WHERE driver_id = $1`
+	_, err = tx.Exec(ctx, query3, id)
+	if err != nil {
+		r.logger.Errorf("Failed to delete user from cars: %v", err)
+		return err
+	}
+
+	query4 := `UPDATE PAYMENTS SET driver_id = NULL WHERE driver_id = $1`
+	_, err = tx.Exec(ctx, query4, id)
+	if err != nil {
+		r.logger.Errorf("Failed to nullify user from payments: %v", err)
+		return err
+	}
+
+	query5 := `DELETE FROM USERS WHERE id = $1`
+	_, err = tx.Exec(ctx, query5, id)
+	if err != nil {
+		r.logger.Errorf("Failed to delete user: %v", err)
+		return err
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		r.logger.Errorf("Failed to commit transaction: %v", err)
+		return err
+	}
+
+	r.logger.Infof("User %s deleted successfully", id)
+	return nil
+}
+
 
 func (r *PostgresRepository) GetAll(ctx context.Context) ([]User, error) {
 	query := `

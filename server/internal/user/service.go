@@ -9,7 +9,7 @@ type Service interface {
 	GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error)
 	//GetById(ctx context.Context, id string) (User, error)
 	//Update(ctx context.Context, user User) error
-	//Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type service struct {
@@ -34,6 +34,10 @@ func (s *service) GetWorkersAndDrivers(ctx context.Context, date string) ([]Driv
 
 func (s *service) GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error) {
 	return s.repo.GetDriversWithoutCar(ctx)
+}
+
+func (s *service) Delete(ctx context.Context, id string) error {
+	return s.repo.Delete(ctx, id)
 }
 
 // func (s *service) GetById(ctx context.Context, id string) (User, error) {

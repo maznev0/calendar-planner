@@ -14,8 +14,8 @@ const COLORS = [
   "#00C7EA",
   "#7D00EA",
   "#37EA00",
-  "#e6ea00",
-  "#fbfbfb",
+  "#E6EA00",
+  "#FBFBFB",
 ];
 
 export default function AddCarPage() {
@@ -72,7 +72,7 @@ export default function AddCarPage() {
             setSelected={(e: string) => setCar({ ...car, color: e })}
             save="key"
             data={colors}
-            placeholder="Выберети роль"
+            placeholder="Выберете цвет"
             arrowicon={<></>}
             searchicon={<></>}
             search={false}
@@ -94,7 +94,7 @@ export default function AddCarPage() {
             type="numeric"
           />
           <SelectList
-            setSelected={(e: string) => setCar({ ...car, color: e })}
+            setSelected={(e: string) => setCar({ ...car, driver_id: e })}
             save="key"
             data={drivers}
             placeholder="Выберети водителя"

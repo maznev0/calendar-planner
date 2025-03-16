@@ -28,7 +28,7 @@ func (h *handler) Register(router *httprouter.Router) {
 	//router.GET("/users/:id", h.GetByID)
 	router.POST("/users", h.Create)
 	//router.PUT("/users/:id", h.Update)
-	//router.DELETE("/users/:id", h.Delete)
+	router.DELETE("/users/delete/:id", h.Delete)
 }
 
 func (h *handler) GetAll(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -98,6 +98,25 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 	w.Write([]byte("User created"))
 	h.logger.Info("User created.")
 
+}
+
+func (h *handler) Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	id := params.ByName("id")
+	if id == "" {
+		h.respondWithError(w, http.StatusBadRequest, "Missing user ID")
+		return
+	}
+
+	ctx := r.Context()
+	err := h.service.Delete(ctx, id)
+	if err != nil {
+		h.logger.Errorf("Failed to delete user %s: %v", id, err)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to delete user")
+		return
+	}
+
+	h.respondWithJSON(w, http.StatusOK, map[string]string{"message": "User deleted successfully"})
+	h.logger.Info("User deleted successfully.")
 }
 
 func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {
