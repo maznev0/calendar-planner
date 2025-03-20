@@ -19,14 +19,14 @@ CREATE TABLE ORDERS (
     price INT NOT NULL,
     driver_id UUID,
     note TEXT,
-    order_state VARCHAR(18) NOT NULL,
+    order_state VARCHAR(19) NOT NULL,
 
     FOREIGN KEY (driver_id) REFERENCES USERS(id) ON DELETE CASCADE
 );
 
 CREATE TABLE ORDER_WORKERS (
     order_id UUID NOT NULL,
-    worker_id UUID NOT NULL,
+    worker_id UUID,
     worker_payment INT NOT NULL,
     
     PRIMARY KEY (order_id, worker_id),

@@ -25,6 +25,7 @@ require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0 // indirect
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/joho/godotenv v1.5.1 // indirect

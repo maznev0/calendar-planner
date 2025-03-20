@@ -17,9 +17,9 @@ function Order({ order }: Props) {
     price,
     order_state,
     drivername,
+    driver_id,
     car_color,
   } = order;
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -33,7 +33,7 @@ function Order({ order }: Props) {
       </View>
       <View style={styles.bottom}>
         <View style={styles.driver_item}>
-          {drivername.length && (
+          {drivername && drivername?.length > 0 && (
             <>
               <View style={styles.driver}>
                 <View
@@ -53,7 +53,7 @@ function Order({ order }: Props) {
           <Text style={styles.money}>
             {meters} - {price} BYN
           </Text>
-          <Text style={[styles.state, { color: STATE_COLOR[order_state] }]}>
+          <Text style={[styles.state, { color: STATE_COLOR[order_state!] }]}>
             {order_state}
           </Text>
         </View>

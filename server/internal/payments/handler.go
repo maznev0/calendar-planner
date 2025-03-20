@@ -41,6 +41,7 @@ func (h *handler) Update(w http.ResponseWriter, r *http.Request, params httprout
 	}
 
 	h.respondWithJSON(w, http.StatusOK, map[string]string{"message": "Payment updated successfully"})
+	h.logger.Info("Payment updated successfully.")
 }
 
 func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {

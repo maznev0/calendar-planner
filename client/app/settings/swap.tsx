@@ -1,64 +1,43 @@
-import { useRouter } from "expo-router";
 import { View, StyleSheet, ScrollView, Alert } from "react-native";
-import Input from "../../components/Input";
 import { useState } from "react";
 import { SelectList } from "react-native-dropdown-select-list";
 import Button from "../../components/Button";
-import { addCar, getDriversWithoutCar } from "../../api/order";
+import { getDriversWithCar, swapCars } from "../../api/order";
+import Text from "../../components/Text";
 import useFetch from "../../hooks/useFetch";
+import { router } from "expo-router";
 
-const COLORS = [
-  "#006DEA",
-  "#EA0004",
-  "#EA8D00",
-  "#00C7EA",
-  "#7D00EA",
-  "#37EA00",
-  "#E6EA00",
-  "#FBFBFB",
-];
+export default function Swap() {
+  const { data } = useFetch(getDriversWithCar);
 
-export default function AddCarPage() {
-  const { data } = useFetch(getDriversWithoutCar);
+  const [driver1, setDriver1] = useState<string>("");
+  const [driver2, setDriver2] = useState<string>("");
 
-  const router = useRouter();
-
-  const [car, setCar] = useState({
-    carname: "",
-    driver_id: "",
-    chat_id: "",
-    color: "",
-  });
-
-  const colors = COLORS.map((color) => ({
-    key: color,
+  const drivers = data?.map((e) => ({
+    key: e.id,
     value: (
-      <View
-        style={{
-          ...styles.car_color,
-          backgroundColor: color,
-        }}
-      />
+      <View style={styles.driver_item}>
+        <View style={styles.driver_name}>
+          <View
+            style={[
+              styles.car_color,
+              {
+                backgroundColor: e.color,
+              },
+            ]}
+          />
+          <Text style={styles.driver_text}>{e.username}</Text>
+        </View>
+      </View>
     ),
   }));
 
-  const drivers =
-    data?.map((driver) => ({
-      key: driver.id,
-      value: driver.username,
-    })) || [];
-
-  const handleAddCar = async () => {
-    if (!car.carname.length || !car.driver_id || !car.color || !car.chat_id) {
-      Alert.alert("Не заполнены необходимые поля!");
+  const handleSwap = async () => {
+    if (!driver1.length || !driver2.length) {
+      Alert.alert("Не заполнены необходимые поля");
       return;
     }
-    const carFetch = {
-      ...car,
-      chat_id: parseInt(car.chat_id),
-      //telegram_id: parseInt(car.chat_id),
-    };
-    await addCar(carFetch);
+    await swapCars(driver1, driver2);
     router.back();
   };
 
@@ -66,60 +45,47 @@ export default function AddCarPage() {
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.list}>
-          <Input
-            name=""
-            placeholder="Введите название"
-            value={car.carname}
-            onChangeText={(e) => setCar({ ...car, carname: e })}
-          />
           <SelectList
-            setSelected={(e: string) => setCar({ ...car, color: e })}
+            setSelected={setDriver1}
             save="key"
-            data={colors}
-            placeholder="Выберете цвет"
+            data={drivers || []}
+            placeholder={"Выберите, кого пересадить"}
             arrowicon={<></>}
             searchicon={<></>}
             search={false}
             boxStyles={styles.boxStyles}
             inputStyles={{
               ...styles.inputStyles,
-              color: styles.placeholderText.color,
-            }}
-            dropdownStyles={styles.dropdownStyles}
-            dropdownItemStyles={styles.dropdownItemStyles}
-            dropdownTextStyles={styles.dropdownTextStyles}
-          />
-          <Input
-            name=""
-            placeholder="Введите telegram id"
-            value={car.chat_id}
-            onChangeText={(e) => setCar({ ...car, chat_id: e })}
-            maxLength={10}
-            type="numeric"
-          />
-          <SelectList
-            setSelected={(e: string) => setCar({ ...car, driver_id: e })}
-            save="key"
-            data={drivers}
-            placeholder="Выберети водителя"
-            arrowicon={<></>}
-            searchicon={<></>}
-            search={false}
-            boxStyles={styles.boxStyles}
-            inputStyles={{
-              ...styles.inputStyles,
-              color: car?.driver_id?.length
+              color: driver1
                 ? styles.selectedText.color
                 : styles.placeholderText.color,
             }}
             dropdownStyles={styles.dropdownStyles}
             dropdownItemStyles={styles.dropdownItemStyles}
             dropdownTextStyles={styles.dropdownTextStyles}
-            notFoundText="Нет водителей без машин"
+          />
+          <SelectList
+            setSelected={setDriver2}
+            save="key"
+            data={drivers || []}
+            placeholder={"Выберите, с кем поменять"}
+            arrowicon={<></>}
+            searchicon={<></>}
+            search={false}
+            boxStyles={styles.boxStyles}
+            inputStyles={{
+              ...styles.inputStyles,
+              color: driver2
+                ? styles.selectedText.color
+                : styles.placeholderText.color,
+            }}
+            dropdownStyles={styles.dropdownStyles}
+            dropdownItemStyles={styles.dropdownItemStyles}
+            dropdownTextStyles={styles.dropdownTextStyles}
           />
         </View>
       </ScrollView>
-      <Button onPress={handleAddCar}>Добавить</Button>
+      <Button onPress={handleSwap}>Пересадить</Button>
     </View>
   );
 }
@@ -137,12 +103,33 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
 
-  car_color: {
-    width: 19,
-    height: 19,
-    borderRadius: "50%",
+  driver_item: {
+    width: "100%",
+    height: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-
+  driver_text: {
+    width: "100%",
+    fontSize: 20,
+    color: "#fff",
+    fontWeight: 300,
+    textAlign: "left",
+  },
+  car_color: { width: 10, height: 10, borderRadius: "50%" },
+  driver_name: {
+    width: "70%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  orders: {
+    fontWeight: 300,
+    fontSize: 23,
+    color: "#FFF",
+    textAlign: "center",
+  },
   input_name: {
     width: "100%",
     color: "#FFF",
@@ -154,19 +141,17 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 51,
 
-    flexDirection: "row",
-    alignItems: "center",
-
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#252525",
+    // borderColor: "#fff",
 
     backgroundColor: "#252525",
 
     zIndex: 10,
     padding: 0,
     margin: 0,
-    paddingLeft: 22,
+    paddingLeft: 12,
   },
   inputStyles: {
     fontSize: 20,
@@ -181,7 +166,7 @@ const styles = StyleSheet.create({
   },
   dropdownStyles: {
     width: "100%",
-    height: 170,
+    height: 200,
     backgroundColor: "#252525",
     borderRadius: 20,
     zIndex: 50,

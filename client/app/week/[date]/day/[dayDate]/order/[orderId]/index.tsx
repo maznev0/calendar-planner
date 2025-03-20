@@ -14,6 +14,7 @@ import useFetch from "../../../../../../../hooks/useFetch";
 import Order from "../../../../../../../components/Order";
 import { OrderParams, OrderResponse } from "../../../../../../../types/order";
 import {
+  deleteOrder,
   getOrderByID,
   sendOrderToDriver,
   updateOrder,
@@ -38,14 +39,32 @@ export default function OrderPage() {
   );
 
   const handleSendToDriver = async () => {
+    console.log(data!.order);
+    const fetchWorkers = data?.workers
+      ? data!.workers.map((w) => ({
+          worker_id: w.worker_id,
+          workername: w.workername,
+        }))
+      : null;
     await sendOrderToDriver({
       order: data!.order,
-      workers: data!.workers.map((w) => ({
-        worker_id: w.worker_id,
-        workername: w.workername,
-      })),
+      workers: fetchWorkers,
     });
+
     router.back();
+    router.back();
+    router.push(`/week/${date}/day/${dayDate}`);
+  };
+
+  const handleDelete = async () => {
+    if (data?.order.id) {
+      await deleteOrder(data?.order.id);
+      router.back();
+      router.back();
+      if (router.canGoBack()) router.back();
+      router.push(`/week/${date}`);
+      router.push(`/week/${date}/day/${dayDate}`);
+    }
   };
 
   if (isLoading) {
@@ -58,24 +77,28 @@ export default function OrderPage() {
         {getDayOfWeek(dayDate) + " " + formatDayMonthUIDate(dayDate)}
       </Header>
       <ScrollView style={styles.info}>
-        <View style={styles.menu}>
-          <TouchableOpacity
-            onPress={() =>
-              router.push(`/week/${date}/day/${dayDate}/order/${orderId}/edit`)
-            }
-          >
-            <Text style={styles.menu_text}>Изменить</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() =>
-              router.push(`/week/${date}/day/${dayDate}/order/${orderId}/edit`)
-            }
-          >
-            <Text style={[styles.menu_text, { color: "#CB4545" }]}>
-              Удалить
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {data?.order.order_state !== "Отправлено" && (
+          <View style={styles.menu}>
+            {data?.order.order_state !== "Готов" && (
+              <TouchableOpacity
+                onPress={() =>
+                  router.push(
+                    `/week/${date}/day/${dayDate}/order/${orderId}/edit`
+                  )
+                }
+              >
+                <Text style={styles.menu_text}>Изменить</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity onPress={handleDelete}>
+              <Text style={[styles.menu_text, { color: "#CB4545" }]}>
+                Удалить
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         <View style={styles.list}>
           {data?.order && <Order order={data.order} />}
 
@@ -94,15 +117,71 @@ export default function OrderPage() {
         </View>
       </ScrollView>
       <View style={styles.buttons}>
-        <Button
-          onPress={() => {
-            // router.push(`/week/${date}/day/${dayDate}/order/${orderId}/edit`);
-          }}
-          color="#CB4545"
-        >
-          Назначить
-        </Button>
-        <Button onPress={handleSendToDriver}>Отправить водителю</Button>
+        {
+          {
+            "Ожидает отправления": (
+              <>
+                <Button
+                  onPress={() => {
+                    router.push(
+                      `/week/${date}/day/${dayDate}/order/${orderId}/set/${
+                        data?.order.driver_id || "null"
+                      }`
+                    );
+                  }}
+                  color="#CB4545"
+                >
+                  Назначить
+                </Button>
+                <Button onPress={handleSendToDriver}>Отправить водителю</Button>
+              </>
+            ),
+            "Ожидает назначения": (
+              <>
+                <Button
+                  onPress={() => {
+                    router.push(
+                      `/week/${date}/day/${dayDate}/order/${orderId}/set/${
+                        data?.order.driver_id || "null"
+                      }`
+                    );
+                  }}
+                  color="#CB4545"
+                >
+                  Назначить
+                </Button>
+              </>
+            ),
+            "Ошибка отправления": (
+              <>
+                <Button
+                  onPress={() => {
+                    router.push(
+                      `/week/${date}/day/${dayDate}/order/${orderId}/set/${
+                        data?.order.driver_id || "null"
+                      }`
+                    );
+                  }}
+                  color="#CB4545"
+                >
+                  Назначить
+                </Button>
+                <Button onPress={handleSendToDriver}>Отправить водителю</Button>
+              </>
+            ),
+
+            "Ожидает проверки": (
+              <>
+                <Button onPress={() => {}}>Изменить выплаты</Button>
+
+                <Button onPress={() => {}}>Готово</Button>
+              </>
+            ),
+            Отправлено: <></>,
+            Готов: <></>,
+            default: <></>,
+          }[data?.order.order_state || "default"]
+        }
       </View>
     </View>
   );

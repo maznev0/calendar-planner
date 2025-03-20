@@ -32,6 +32,15 @@ export default function Settings() {
           <Text style={styles.item_text}>Добавить машину</Text>
         </View>
       </TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/settings/swap")}>
+        <View style={styles.item}>
+          <Image
+            style={styles.icon}
+            source={require("../../assets/icons/users.png")}
+          />
+          <Text style={styles.item_text}>Пересадить водителей</Text>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 }

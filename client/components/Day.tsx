@@ -46,6 +46,7 @@ export default function Day({ dayDate, orders }: Props) {
 
 const styles = StyleSheet.create({
   container: {
+    width: "100%",
     height: 27 * PixelRatio.get(),
     backgroundColor: "#252525",
     borderRadius: 20,

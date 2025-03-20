@@ -12,6 +12,7 @@ type Repository interface {
 	GetAll(ctx context.Context) ([]User, error)
 	GetWorkersAndDrivers(ctx context.Context, date string) ([]Drivers, []Workers, error)
 	GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error)
+	GetDriversWithCar(ctx context.Context) ([]DriversWithCar, error)
 	//GetDrivers(ctx context.Context) ([]User, error)
 	//GetById(ctx context.Context, id string) (User, error)
 	//Update(ctx context.Context, user User) error
@@ -51,11 +52,11 @@ func (r *PostgresRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	query2 := `UPDATE ORDER_WORKERS SET worker_id = NULL WHERE worker_id = $1`
+	query2 := `DELETE FROM ORDER_WORKERS WHERE worker_id = $1`
 	_, err = tx.Exec(ctx, query2, id)
 	if err != nil {
-		r.logger.Errorf("Failed to nullify user from order_workers: %v", err)
-		return err
+    	r.logger.Errorf("Failed to delete user from order_workers: %v", err)
+    	return err
 	}
 
 	query3 := `DELETE FROM CARS WHERE driver_id = $1`
@@ -217,7 +218,33 @@ func (r *PostgresRepository) GetDriversWithoutCar(ctx context.Context) ([]Driver
 	return drivers, nil
 }
 
+func (r *PostgresRepository) GetDriversWithCar(ctx context.Context) ([]DriversWithCar, error) {
+	var drivers []DriversWithCar
 
+	query := `
+		SELECT u.id, u.username, c.color 
+		FROM USERS u
+		JOIN CARS c ON u.id = c.driver_id
+	`
+
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		r.logger.Errorf("Failed to get drivers with car: %v", err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var driver DriversWithCar
+		if err := rows.Scan(&driver.Id, &driver.Username, &driver.Color); err != nil {
+			r.logger.Errorf("Failed to scan driver with car: %v", err)
+			return nil, err
+		}
+		drivers = append(drivers, driver)
+	}
+
+	return drivers, nil
+}
 
 // func (r *PostgresRepository) GetById(ctx context.Context, id string) (User, error) {
 // 	return User{}, nil

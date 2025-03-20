@@ -14,9 +14,11 @@ type Repository interface {
 	GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error)
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
 	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
+	GetWorkers(ctx context.Context, orderId string) ([]string, error)
 	Update(ctx context.Context, order Order) error
+	UpdateWorkersAndDriver(ctx context.Context, orderId string, driverId *string, workerIds *[]string) error
 	UpdateOrderState(ctx context.Context, orderId, newState string) error
-	//Delete(ctx context.Context, id string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type PostgresRepository struct {
@@ -38,11 +40,16 @@ func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers [
 	}
 	defer tx.Rollback(ctx)
 
+	var driverId *string
+	if *order.DriverId != "" {
+   		driverId = order.DriverId
+	}
+
 	queryOrder := `INSERT INTO ORDERS 
 		(order_date, order_address, phone_number, meters, price, driver_id, note, order_state) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 	var orderId string
-	err = tx.QueryRow(ctx, queryOrder, order.Date, order.Address, order.PhoneNumber, order.Meters, order.Price, order.DriverId, order.Note, order.OrderState).Scan(&orderId)
+	err = tx.QueryRow(ctx, queryOrder, order.Date, order.Address, order.PhoneNumber, order.Meters, order.Price, driverId, order.Note, order.OrderState).Scan(&orderId)
 	if err != nil {
 		return err
 	}
@@ -55,9 +62,9 @@ func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers [
 		}
 	}
 
-	queryPayment := `INSERT INTO PAYMENTS (order_id, driver_id, total_price, driver_price, polish, other_price) 
-		VALUES ($1, $2, 0, 0, 0, 0)`
-	_, err = tx.Exec(ctx, queryPayment, orderId, order.DriverId)
+	queryPayment := `INSERT INTO PAYMENTS (order_id, driver_id, total_price, driver_price, polish, other_price, profit) 
+		VALUES ($1, $2, 0, 0, 0, 0, 0)`
+	_, err = tx.Exec(ctx, queryPayment, orderId, driverId)
 	if err != nil {
 		return err
 	}
@@ -83,6 +90,46 @@ func (r *PostgresRepository) Update(ctx context.Context, order Order) error {
 	return nil
 }
 
+func (r *PostgresRepository) UpdateWorkersAndDriver(ctx context.Context, orderId string, driverId *string, workerIds *[]string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// Обновление водителя в заказе и платежах
+	if driverId != nil {
+		_, err := tx.Exec(ctx, `UPDATE orders SET driver_id = $1 WHERE id = $2`, *driverId, orderId)
+		if err != nil {
+			return err
+		}
+		_, err = tx.Exec(ctx, `INSERT INTO payments (order_id, driver_id, total_price, driver_price, polish, other_price, profit)
+			VALUES ($1, $2, 0, 0, 0, 0, 0) 
+			ON CONFLICT (order_id) DO UPDATE SET driver_id = $2`, orderId, *driverId)
+		if err != nil {
+			return err
+		}
+	}
+
+	if workerIds != nil {
+		// Удаление старых рабочих
+		_, err = tx.Exec(ctx, `DELETE FROM order_workers WHERE order_id = $1`, orderId)
+		if err != nil {
+			return err
+		}
+
+		// Добавление новых рабочих
+		for _, workerId := range *workerIds {
+			_, err := tx.Exec(ctx, `INSERT INTO order_workers (order_id, worker_id, worker_payment) VALUES ($1, $2, 0)`, orderId, workerId)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return tx.Commit(ctx)
+}
+
 func (r *PostgresRepository) UpdateOrderState(ctx context.Context, orderId, newState string) error {
 	query := `UPDATE ORDERS SET order_state = $1 WHERE id = $2`
 
@@ -94,7 +141,16 @@ func (r *PostgresRepository) UpdateOrderState(ctx context.Context, orderId, newS
 	return nil
 }
 
-
+func (r *PostgresRepository) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM orders WHERE id = $1`
+	_, err := r.db.Exec(ctx, query, id)
+	if err != nil {
+		r.logger.Errorf("Ошибка при удалении заказа с id %s: %v", id, err)
+		return err
+	}
+	r.logger.Infof("Заказ с id %s успешно удалён", id)
+	return nil
+}
 
 func (r *PostgresRepository) GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error) {
 	query := `
@@ -136,9 +192,9 @@ func (r *PostgresRepository) GetOrdersByDate(ctx context.Context, date string) (
 
 	query := `
 		SELECT o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, 
-		o.meters, o.price, u.username AS driver_name, c.color, o.order_state
+		o.meters, o.price, COALESCE(u.username, '') AS driver_name, COALESCE(c.color, '') AS car_color, o.order_state
 	FROM ORDERS o
-	JOIN USERS u ON o.driver_id = u.id
+	LEFT JOIN USERS u ON o.driver_id = u.id
 	LEFT JOIN CARS c ON o.driver_id = c.driver_id
 	WHERE o.order_date = $1`
 	rows, err := r.db.Query(ctx, query, date)
@@ -160,9 +216,9 @@ func (r *PostgresRepository) GetOrdersByDate(ctx context.Context, date string) (
 	}
 
 	workerQuery := `
-		SELECT ow.order_id, u.username 
+		SELECT ow.order_id, COALESCE(u.username, '') 
 		FROM ORDER_WORKERS ow
-		JOIN USERS u ON ow.worker_id = u.id
+		LEFT JOIN USERS u ON ow.worker_id = u.id
 		WHERE ow.order_id = ANY($1)`
 
 	orderIDs := make([]string, 0, len(orderMap))
@@ -202,10 +258,14 @@ func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, []W
 	var payments Payments
 
 	// Получение заказа
-	queryOrder := `SELECT o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, o.meters, o.price, o.driver_id, 
-		u.username AS driver_name, c.color, c.chat_id, o.note, o.order_state FROM orders o
-		JOIN USERS u ON o.driver_id = u.id 
-		LEFT JOIN cars c ON o.driver_id = c.driver_id WHERE o.id = $1
+	queryOrder := `SELECT 
+			o.id, TO_CHAR(o.order_date, 'YYYY-MM-DD'), o.order_address, o.phone_number, o.meters, o.price, o.driver_id, 
+			COALESCE(u.username, '') AS driver_name, COALESCE(c.color, '') AS car_color, 
+			COALESCE(c.chat_id, 0) AS chat_id, o.note, o.order_state 
+		FROM orders o
+		LEFT JOIN users u ON o.driver_id = u.id  
+		LEFT JOIN cars c ON o.driver_id = c.driver_id 
+		WHERE o.id = $1
 		`
 	row := r.db.QueryRow(ctx, queryOrder, id)
 	if err := row.Scan(&order.Id, &order.Date, &order.Address, &order.PhoneNumber, &order.Meters, &order.Price, &order.DriverId, &order.Drivername, &order.CarColor, &order.ChatId, &order.Note, &order.OrderState); err != nil {
@@ -214,10 +274,11 @@ func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, []W
 	}
 
 	// Получение работников
-	queryWorkers := `SELECT ow.worker_id, u.username, ow.worker_payment 
-	    FROM order_workers ow 
-	    JOIN users u ON ow.worker_id = u.id 
-	    WHERE ow.order_id = $1`
+	queryWorkers := `
+		SELECT ow.worker_id, COALESCE(u.username, '') AS workername, ow.worker_payment 
+		FROM order_workers ow 
+		LEFT JOIN users u ON ow.worker_id = u.id 
+		WHERE ow.order_id = $1`
 	rows, err := r.db.Query(ctx, queryWorkers, id)
 	if err != nil {
 		r.logger.Errorf("Failed to get workers for order: %v", err)		
@@ -246,4 +307,23 @@ func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, []W
 	}
 
 	return order, workers, payments, nil
+}
+
+func (r *PostgresRepository) GetWorkers(ctx context.Context, orderId string) ([]string, error) {
+	rows, err := r.db.Query(ctx, "SELECT worker_id FROM ORDER_WORKERS WHERE order_id = $1", orderId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var workerIDs []string
+	for rows.Next() {
+		var workerID string
+		if err := rows.Scan(&workerID); err != nil {
+			return nil, err
+		}
+		workerIDs = append(workerIDs, workerID)
+	}
+
+	return workerIDs, nil
 }

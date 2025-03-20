@@ -1,4 +1,10 @@
-import { View, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  FlatList,
+} from "react-native";
 import Day from "../../../components/Day";
 import Header from "../../../components/Header";
 import {
@@ -17,7 +23,7 @@ import {
   OrderQuantityResponse,
 } from "../../../types/order";
 import Text from "../../../components/Text";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 export default function Home() {
   const { date } = useLocalSearchParams<{ date: string }>();
@@ -29,19 +35,47 @@ export default function Home() {
     OrderQuantityParams
   >(getOrdersQuantity, getStartEndWeekDates(selectedDate));
 
-  const week = useMemo(
+  let week = useMemo(
     () => getWeekByDate(data || [], selectedDate),
     [data, date]
   );
 
+  // const [refreshing, setRefreshing] = useState(false);
+
   const handleHeaderPress = () => {
-    if (!router.canGoBack()) return;
-    router.dismissAll();
+    // if (!router.canGoBack()) return;
+    // router.dismissAll();
+    router.replace(`/week/${formatDate(new Date())}`);
+  };
+
+  // const onRefresh = async () => {
+  //   setRefreshing(true);
+  //   const data = await getStartEndWeekDates(selectedDate);
+  //   week = getWeekByDate(data, selectedDate);
+  //   setRefreshing(false);
+  // };
+
+  const handleSwipe = (direction: "left" | "right") => {
+    const newDate = new Date(selectedDate);
+
+    if (direction === "left") {
+      newDate.setDate(newDate.getDate() + 7);
+      router.replace({
+        pathname: `/week/${formatDate(newDate)}`,
+        // animation: "slide_from_left",
+      });
+    } else if (direction === "right") {
+      newDate.setDate(newDate.getDate() - 7);
+      router.replace(`/week/${formatDate(newDate)}`);
+    }
+
+    // const newDateString = formatDate(newDate);
+    // router.push(`/week/${newDateString}`);
   };
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, backgroundColor: "#3C3C3C" }}>
         <Text>Loading...</Text>
       </View>
     );
@@ -55,11 +89,26 @@ export default function Home() {
           formatDayMonthUIDate(formatDate(new Date()))}
       </Header>
 
-      <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        {week.map(({ date, orders_quantity }) => (
-          <Day key={date} dayDate={date} orders={orders_quantity} />
-        ))}
-        <Button onPress={() => {}}>Статистика</Button>
+      <ScrollView
+        horizontal
+        style={{ width: "100%" }}
+        onMomentumScrollBegin={(event) => {
+          const offsetX = event.nativeEvent.contentOffset.x;
+          const threshold = 60;
+
+          if (offsetX > threshold) {
+            handleSwipe("left"); // Свайп влево
+          } else if (offsetX < -threshold) {
+            handleSwipe("right"); // Свайп вправо
+          }
+        }}
+      >
+        <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
+          {week.map(({ date, orders_quantity }) => (
+            <Day key={date} dayDate={date} orders={orders_quantity} />
+          ))}
+          <Button onPress={() => {}}>Статистика</Button>
+        </ScrollView>
       </ScrollView>
     </View>
   );
@@ -75,7 +124,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   list: {
+    // width: "100%",
+    width: 385,
     height: "100%",
+    flex: 1,
     paddingVertical: 15,
+    // borderWidth: 1,
+    // borderColor: "#FFF",
   },
 });
+
+function addWeeks(date: Date, weeks: number): Date {
+  const result = new Date(date); // Создаем копию исходной даты, чтобы не мутировать её
+  result.setDate(result.getDate() + weeks * 7); // Добавляем или вычитаем недели
+  return result;
+}

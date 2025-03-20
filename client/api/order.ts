@@ -20,7 +20,7 @@ import {
 } from "../types/order";
 import { DayDateParams } from "../types/date";
 
-const BASE_URL = "192.168.100.6";
+const BASE_URL = "172.20.10.7";
 
 export const getAllUsers = async (): Promise<UsersResponse> => {
   try {
@@ -46,7 +46,7 @@ interface ICar {
   carname: string;
   driver_id: string;
   color: string;
-  telegram_id: number;
+  //telegram_id: number;
   chat_id: number;
 }
 
@@ -108,9 +108,64 @@ export const updateOrder = async (order: IOrderUpdate) => {
   }
 };
 
+interface DW {
+  order_id: string;
+  driver_id: string;
+  worker_ids: string[] | null;
+}
+
+export const updateDriversWorkers = async (driversWorkers: DW) => {
+  try {
+    await axios.post(
+      `http://${BASE_URL}:10000/orders/update/workers&drivers`,
+      driversWorkers,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+
+    //Alert.alert("Успех", "Заказ успешно отправлен!");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
 export const addOrder = async (order: IOrderFetch) => {
   try {
     await axios.post(`http://${BASE_URL}:10000/orders`, order, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    //Alert.alert("Успех", "Заказ успешно отправлен!");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
+export const deleteOrder = async (orderId: string) => {
+  try {
+    await axios.delete(`http://${BASE_URL}:10000/orders/delete/${orderId}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    //Alert.alert("Успех", "Заказ успешно отправлен!");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
+export const deleteUser = async (userId: string) => {
+  try {
+    await axios.delete(`http://${BASE_URL}:10000/users/delete/${userId}`, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -191,10 +246,53 @@ export const getWorkersDrivers = async (params?: DayDateParams) => {
   }
 };
 
+export const swapCars = async (id1: string, id2: string) => {
+  try {
+    const response = await axios.post<
+      { id: string; username: string; color: string }[]
+    >(
+      `http://${BASE_URL}:10000/cars/swap`,
+      {
+        driver_id1: id1,
+        driver_id2: id2,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    Alert.alert("Водители успешно поменялись!");
+    return response.data;
+  } catch (err) {
+    Alert.alert("Ошибка", "Не удалось загрузить данные!");
+    return [];
+  }
+};
+
+export const getDriversWithCar = async () => {
+  try {
+    const response = await axios.get<
+      { id: string; username: string; color: string }[]
+    >(`http://${BASE_URL}:10000/users/drivers-with-car`, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    return response.data;
+  } catch (err) {
+    Alert.alert("Ошибка", "Не удалось загрузить данные!");
+    return [];
+  }
+};
+
 export const getDriversWithoutCar = async () => {
   try {
     const response = await axios.get<{ id: string; username: string }[]>(
-      `http://${BASE_URL}:10000/users/drivers`,
+      `http://${BASE_URL}:10000/users/drivers-without-car`,
       {
         headers: {
           "Content-Type": "application/json",

@@ -7,6 +7,8 @@ type Service interface {
 	GetAll(ctx context.Context) (users []User, err error)
 	GetWorkersAndDrivers(ctx context.Context, date string) ([]Drivers, []Workers, error)
 	GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error)
+	GetDriversWithCar(ctx context.Context) ([]DriversWithCar, error)
+
 	//GetById(ctx context.Context, id string) (User, error)
 	//Update(ctx context.Context, user User) error
 	Delete(ctx context.Context, id string) error
@@ -34,6 +36,10 @@ func (s *service) GetWorkersAndDrivers(ctx context.Context, date string) ([]Driv
 
 func (s *service) GetDriversWithoutCar(ctx context.Context) ([]DriversWithoutCar, error) {
 	return s.repo.GetDriversWithoutCar(ctx)
+}
+
+func (s *service) GetDriversWithCar(ctx context.Context) ([]DriversWithCar, error) {
+	return s.repo.GetDriversWithCar(ctx)
 }
 
 func (s *service) Delete(ctx context.Context, id string) error {

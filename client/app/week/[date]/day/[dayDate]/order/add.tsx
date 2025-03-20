@@ -47,7 +47,6 @@ const Add = () => {
     workers: [],
     driver_id: "",
     note: "",
-    order_state: "Ожидает отправки",
   });
 
   const handleChangeText = (field: string, value: string) => {
@@ -82,6 +81,9 @@ const Add = () => {
       Alert.alert("Неправильно набран номер!");
       return;
     }
+    const orderState = !order.driver_id.length
+      ? "Ожидает назначения"
+      : "Ожидает отправления";
 
     const fetchOrder: IOrderFetch = {
       order: {
@@ -92,7 +94,7 @@ const Add = () => {
         phone_number: order.phone_number,
         driver_id: order.driver_id,
         note: order.note,
-        order_state: order.order_state,
+        order_state: orderState,
       },
       workers: [
         ...order.workers.map((id) => ({
@@ -101,7 +103,6 @@ const Add = () => {
         })),
       ],
     };
-
     // router.push(`/week/${date}/day/${dayDate}`);
     await addOrder(fetchOrder);
     router.dismissAll();

@@ -7,6 +7,7 @@ type Payment struct {
 	DriverPrice    int      `json:"driver_price" binding:"required"`
 	OtherPrice     int      `json:"other_price" binding:"required"`
 	Polish 		   int      `json:"polish" binding:"required"`
+	Profit		   int
 	WorkersPayments []Worker `json:"workers_payments" binding:"required"`
 }
 

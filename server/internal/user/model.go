@@ -25,3 +25,9 @@ type DriversWithoutCar struct {
 	Id       string `json:"id"`
 	Username string `json:"username"`
 }
+
+type DriversWithCar struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+	Color    string `json:"color"`
+}

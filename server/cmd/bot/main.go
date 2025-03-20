@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,34 +15,39 @@ import (
 )
 
 func main() {
-	logger := logging.GetLogger()
+    logger := logging.GetLogger()
 
-	cfg := config.GetConfig()
-	logger.Info("BOT запущен")
+    cfg := config.GetConfig()
+    logger.Info("BOT is starting")
 
-	// Инициализация бота
-	bot, err := tgBotApi.NewBotAPI(cfg.Telegram.Token)
-	if err != nil {
-		logger.Fatal(err)
-	}
+    bot, err := tgBotApi.NewBotAPI(cfg.Telegram.Token)
+    if err != nil {
+        logger.Fatal(err)
+    }
 
-	bot.Debug = true
+    bot.Debug = true
+    logger.Info("BOT initialized")
 
-	// Подключение к NATS
-	natsConn, err := nats.Connect(nats.DefaultURL)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	defer natsConn.Close()
+    natsConn, err := nats.Connect(nats.DefaultURL)
+    if err != nil {
+        logger.Fatal(err)
+    }
+    defer natsConn.Close()
 
-	if err := telegram.StartTelegramBot(bot, logger, natsConn); err != nil {
-		logger.Fatal(err)
-	}
+    if err := telegram.StartTelegramBot(bot, logger, natsConn); err != nil {
+        logger.Fatal(err)
+    }
 
-	// Ожидание SIGTERM или SIGINT для безопасного завершения
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
-	<-quit
+    go func() {
+        logger.Info("Starting HTTP-server for webhooks on port 8082")
+        if err := http.ListenAndServe(":8082", nil); err != nil {
+            logger.Fatalf("Failed to start server: %v", err)
+        }
+    }()
 
-	logger.Info("BOT завершает работу")
+    quit := make(chan os.Signal, 1)
+    signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+    <-quit
+
+    logger.Info("BOT завершает работу")
 }

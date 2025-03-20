@@ -4,9 +4,12 @@ import DriverItem from "../../components/DriverItem";
 import WorkerItem from "../../components/WorkerItem";
 import useFetch from "../../hooks/useFetch";
 import { getAllUsers } from "../../api/order";
+import Text from "../../components/Text";
 
 export default function Users() {
   const { isLoading, data } = useFetch(getAllUsers);
+
+  if (isLoading) return <Text>Loading ...</Text>;
 
   return (
     <View style={styles.container}>
@@ -17,13 +20,16 @@ export default function Users() {
               case "driver":
                 return (
                   <DriverItem
+                    id={user.id}
                     name={user.username}
                     carColor={user.car_color}
                     key={user.id}
                   />
                 );
               case "worker":
-                return <WorkerItem name={user.username} key={user.id} />;
+                return (
+                  <WorkerItem id={user.id} name={user.username} key={user.id} />
+                );
             }
           })}
       </ScrollView>

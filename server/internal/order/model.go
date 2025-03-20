@@ -7,10 +7,10 @@ type Order struct {
 	PhoneNumber string    `json:"phone_number" binding:"required"`
 	Meters 		float32   `json:"meters" binding:"required"`
 	Price 		int       `json:"price" binding:"required"`
-	DriverId 	string    `json:"driver_id"`
-	Drivername 	string    `json:"drivername"`
-	CarColor    string    `json:"car_color"`
-	ChatId      int64     `json:"chat_id" binding:"required"`
+	DriverId 	*string    `json:"driver_id"`
+	Drivername 	*string    `json:"drivername"`
+	CarColor    *string    `json:"car_color"`
+	ChatId      *int64     `json:"chat_id" binding:"required"`
 	Note 	    string    `json:"note"`
 	OrderState  string    `json:"order_state" binding:"required"`
 }

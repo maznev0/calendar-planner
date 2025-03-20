@@ -23,7 +23,6 @@ export interface IOrderState {
   workers: string[];
   driver_id: string;
   note: string;
-  order_state: string;
 }
 
 export interface OrderQuantityParams {
@@ -67,7 +66,7 @@ export interface OrderResponse {
 
 export interface IOrderSend {
   order: IOrder;
-  workers: WorkerSendFetch[];
+  workers: WorkerSendFetch[] | null;
 }
 
 export interface IOrderUpdate {

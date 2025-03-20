@@ -1,15 +1,28 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
 import Text from "./Text";
+import { deleteUser } from "../api/order";
+import { router } from "expo-router";
 
 interface Props {
+  id: string;
   name: string;
 }
 
-export default function WorkerItem({ name }: Props) {
+export default function WorkerItem({ id, name }: Props) {
+  const handleDelete = async () => {
+    await deleteUser(id);
+    router.back();
+    router.push("/users");
+  };
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>👷</Text>
-      <Text style={styles.name}>{name}</Text>
+      <View style={styles.info}>
+        <Text style={styles.icon}>👷</Text>
+        <Text style={styles.name}>{name}</Text>
+      </View>
+      <TouchableOpacity onPress={handleDelete}>
+        <Image source={require("../assets/icons/trash.png")} />
+      </TouchableOpacity>
     </View>
   );
 }
@@ -24,6 +37,11 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     paddingHorizontal: 17,
 
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  info: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,

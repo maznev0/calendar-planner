@@ -29,9 +29,12 @@ func (h *handler) Register(router *httprouter.Router) {
 	router.GET("/orders/days", h.GetQuantityByDates)
 	router.GET("/orders/day", h.GetOrdersByDate)  
 	router.GET("/orders/day/:id", h.GetById)
+	router.GET("/orders/workers", h.GetWorkers)
 	router.POST("/orders", h.Create)
 	router.POST("/orders/send", h.SendOrder)
 	router.POST("/orders/update", h.Update)
+	router.POST("/orders/update/workers&drivers", h.UpdateWorkersAndDriver)
+	router.DELETE("/orders/delete/:id", h.Delete)
 }
 
 func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
@@ -61,15 +64,13 @@ func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprout
 }
 
 func (h *handler) Update(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	ctx := r.Context()
-
 	var order Order
 	if err := json.NewDecoder(r.Body).Decode(&order); err != nil {
 		h.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
 		return
 	}
 
-	if err := h.service.Update(ctx, order); err != nil {
+	if err := h.service.Update(r.Context(), order); err != nil {
 		h.logger.Errorf("Failed to update order: %v", err)
 		h.respondWithError(w, http.StatusInternalServerError, "Failed to update order")
 		return
@@ -79,6 +80,58 @@ func (h *handler) Update(w http.ResponseWriter, r *http.Request, _ httprouter.Pa
 	h.logger.Info("Order updated successfully")
 }
 
+func (h *handler) UpdateWorkersAndDriver(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	type UpdateWorkersDriversRequest struct {
+		OrderID   string   `json:"order_id"`
+		DriverID  *string  `json:"driver_id"`
+		WorkerIDs *[]string `json:"worker_ids"`
+	}
+
+	var req UpdateWorkersDriversRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.respondWithError(w, http.StatusBadRequest, "Invalid request payload")
+		return
+	}
+
+	err := h.service.UpdateWorkersAndDriver(r.Context(), req.OrderID, req.DriverID, req.WorkerIDs)
+	if err != nil {
+		h.logger.Errorf("Failed to update workers and driver: %v", err)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to update order assignments")
+		return
+	}
+
+	newState := "Ожидает назначения"
+	if req.DriverID != nil {
+		newState = "Ожидает отправления"
+	}
+	err = h.service.UpdateOrderState(r.Context(), req.OrderID, newState)
+	if err != nil {
+		h.logger.Errorf("Failed to update order state: %v", err)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to update order state")
+		return
+	}
+
+	h.respondWithJSON(w, http.StatusOK, map[string]string{"message": "Order assignments updated successfully"})
+}
+
+func (h *handler) Delete(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
+	id := params.ByName("id")
+	if id == "" {
+		h.respondWithError(w, http.StatusBadRequest, "Missing Order Id")
+		h.logger.Error("Missing Order Id")
+		return
+	}
+
+	err := h.service.Delete(r.Context(), id)
+	if err != nil {
+		h.logger.Errorf("Failed to delete order with id %s: %v", id, err)
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to delete order")
+		return
+	}
+
+	h.respondWithJSON(w, http.StatusOK, map[string]string{"message": "Order Deleted"})
+	h.logger.Info("Order Deleted")
+}
 
 func (h *handler) GetQuantityByDates(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	startDate := r.URL.Query().Get("start")
@@ -149,6 +202,7 @@ func (h *handler) SendOrder(w http.ResponseWriter, r *http.Request, _ httprouter
 	var payload struct {
 		Order struct {
 			OrderId      string  `json:"id"`
+			DriverId     string  `json:"driver_id"`
 			OrderDate    string  `json:"order_date"`
 			OrderAddress string  `json:"order_address"`
 			PhoneNumber  string  `json:"phone_number"`
@@ -185,7 +239,7 @@ func (h *handler) SendOrder(w http.ResponseWriter, r *http.Request, _ httprouter
 		return
 	}
 
-	if err := h.service.UpdateOrderState(ctx, orderId, "отправлено"); err != nil {
+	if err := h.service.UpdateOrderState(ctx, orderId, "Отправлено"); err != nil {
 		h.respondWithError(w, http.StatusInternalServerError, "Failed to update order status")
 		return
 	}
@@ -194,6 +248,24 @@ func (h *handler) SendOrder(w http.ResponseWriter, r *http.Request, _ httprouter
 	h.logger.Info("Order sent successfully.")
 }
 
+func (h *handler) GetWorkers(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	orderId := r.URL.Query().Get("order_id")
+	if orderId == "" {
+		h.logger.Error("order_id is required")
+		h.respondWithError(w, http.StatusBadRequest, "order_id is required")
+		return
+	}
+
+	workerIDs, err := h.service.GetWorkers(r.Context(), orderId)
+	if err != nil {
+		h.logger.Error("Failed to fetch workers")
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to fetch workers")
+		return
+	}
+
+	h.respondWithJSON(w, http.StatusOK, workerIDs)
+	h.logger.Infof("Get Workers for order_id: %s", orderId)
+}
 
 
 func (h *handler) respondWithError(w http.ResponseWriter, code int, message string) {

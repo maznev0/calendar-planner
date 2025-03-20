@@ -30,11 +30,21 @@ func (r *PostgresRepository) Update(ctx context.Context, payment Payment) error 
 	}
 	defer tx.Rollback(ctx)
 
+	workersPayments := 0
+	for _, worker := range payment.WorkersPayments {
+		workersPayments += worker.WorkerPayment
+	}
+	r.logger.Infof("workersPayments: %d", workersPayments)
+
 	_, err = tx.Exec(ctx, `
 		UPDATE payments 
-		SET total_price = $1, driver_price = $2, other_price = $3, polish = $4
-		WHERE order_id = $4 AND driver_id = $5`,
-		payment.TotalPrice, payment.DriverPrice, payment.OtherPrice, payment.Polish, payment.OrderId, payment.DriverId)
+		SET total_price = $1, driver_price = $2, other_price = $3, polish = $4, 
+	    	profit = (COALESCE($1, 0) - COALESCE($2, 0) - COALESCE($3, 0) - COALESCE($5, 0)) 
+		WHERE order_id = $6 AND driver_id = $7`,
+		payment.TotalPrice, payment.DriverPrice, payment.OtherPrice, payment.Polish, 
+		workersPayments, payment.OrderId, payment.DriverId,
+	)
+
 	if err != nil {
 		return err
 	}

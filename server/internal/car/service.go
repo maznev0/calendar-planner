@@ -4,6 +4,7 @@ import "context"
 
 type Service interface {
 	Create(ctx context.Context, car *Car, driver_id string) error
+	Swap(ctx context.Context, driverID1, driverID2 string) error
 	GetAll(ctx context.Context) ([]Car, error)
 	// GetOne(ctx context.Context, driver_id string) (car Car, err error)
 	// GetAll(ctx context.Context) (cars []Car, err error)
@@ -21,6 +22,10 @@ func NewService(repo Repository) Service {
 
 func (s *service) Create(ctx context.Context, car *Car, driver_id string) error {
 	return s.repo.Create(ctx, car, driver_id)
+}
+
+func (s *service) Swap(ctx context.Context, driverID1, driverID2 string) error {
+	return s.repo.Swap(ctx, driverID1, driverID2)
 }
 
 func (s *service) GetAll(ctx context.Context) ([]Car, error){
