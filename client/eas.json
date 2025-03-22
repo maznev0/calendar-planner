@@ -1,0 +1,30 @@
+{
+  "cli": {
+    "version": ">= 16.0.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "production": {
+      "resourceClass": "default",
+      "ios": {
+        "simulator": false,
+        "env": {
+          "SERVER_URL": "$SERVER_URL"
+        }
+      }
+    },
+    "development": {
+      "resourceClass": "default",
+      "ios": {
+        "simulator": true,
+        "developmentClient": true,
+        "env": {
+          "SERVER_URL": "$SERVER_URL"
+        }
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

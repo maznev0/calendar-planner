@@ -12,14 +12,6 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-// const data = [
-//   { key: 1, value: `Владос` },
-//   { key: 2, value: "Александр" },
-//   { key: 3, value: "Дмитрий" },
-//   { key: 4, value: "Егор" },
-//   { key: 5, value: "Даниил" },
-// ];
-
 const SelectInput: FunctionComponent<Props> = ({
   name,
   placeholder,
@@ -45,16 +37,13 @@ const SelectInput: FunctionComponent<Props> = ({
             {name || ""} {e.username}
           </Text>
         </View>
-        {/* <View> */}
         <Text style={styles.orders}>{e.order_quantity}</Text>
-        {/* </View> */}
       </View>
     ),
   }));
 
   return (
     <SelectList
-      // setSelected={(e) => onChange(e.key)}
       setSelected={onChange}
       save="key"
       data={formattedData}
@@ -83,9 +72,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-
-    // borderWidth: 1,
-    // borderColor: "#FFF",
   },
   driver_text: {
     width: "100%",
@@ -121,7 +107,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: "#252525",
-    // borderColor: "#fff",
 
     backgroundColor: "#252525",
 

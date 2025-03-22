@@ -15,9 +15,14 @@ const CalendarDay: FC<Props> = memo(
 
     const router = useRouter();
     const handlePress = () => {
-      router.push(
-        `/week/${new Date(date.dateString).toISOString().split("T")[0]}`
-      );
+      const selectedDate = new Date(date.dateString);
+
+      if (selectedDate.getDay() === 0) {
+        selectedDate.setDate(selectedDate.getDate() - 1);
+      }
+
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      router.push(`/week/${formattedDate}`);
     };
 
     return (

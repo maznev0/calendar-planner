@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Image, Alert } from "react-native";
 import Text from "./Text";
 import { deleteUser } from "../api/order";
 import { router } from "expo-router";
@@ -10,9 +10,26 @@ interface Props {
 
 export default function WorkerItem({ id, name }: Props) {
   const handleDelete = async () => {
-    await deleteUser(id);
-    router.back();
-    router.push("/users");
+    await Alert.alert(
+      "Подтверждение",
+      "Вы уверены, что хотите удалить рабочего?",
+      [
+        {
+          text: "Нет",
+          onPress: () => {},
+          style: "cancel",
+        },
+        {
+          text: "Да",
+          onPress: async () => {
+            await deleteUser(id);
+            router.back();
+            router.push("/users");
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
   return (
     <View style={styles.container}>

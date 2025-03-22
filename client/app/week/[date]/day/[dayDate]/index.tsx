@@ -7,7 +7,12 @@ import useFetch from "../../../../../hooks/useFetch";
 import { getOrdersByDay } from "../../../../../api/order";
 import { OrderCardParams, OrderCardResponse } from "../../../../../types/order";
 import Text from "../../../../../components/Text";
-import { formatDayMonthUIDate, getDayOfWeek } from "../../../../../utils/date";
+import {
+  formatDate,
+  formatDayMonthUIDate,
+  getDayOfWeek,
+} from "../../../../../utils/date";
+import Loader from "../../../../../components/Loader";
 
 export default function Day() {
   const { date, dayDate } = useLocalSearchParams<{
@@ -21,18 +26,17 @@ export default function Day() {
   >(getOrdersByDay, {
     date: dayDate,
   });
+  const handleHeaderPress = () => {
+    router.replace(`/week/${formatDate(new Date())}`);
+  };
 
   if (isLoading) {
-    return (
-      <View>
-        <Text>Loading ...</Text>
-      </View>
-    );
+    return <Loader />;
   }
 
   return (
     <View style={styles.container}>
-      <Header>
+      <Header onPress={handleHeaderPress}>
         {getDayOfWeek(dayDate) + " " + formatDayMonthUIDate(dayDate)}
       </Header>
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>

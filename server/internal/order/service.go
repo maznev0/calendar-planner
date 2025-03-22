@@ -2,7 +2,6 @@ package order
 
 import (
 	"context"
-	"server/internal/worker"
 )
 
 type Service interface {
@@ -10,7 +9,7 @@ type Service interface {
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
 	GetById(ctx context.Context, id string) (Order, []Worker, Payments, error)
 	GetWorkers(ctx context.Context, orderId string) ([]string, error)
-	Create(ctx context.Context, order *Order, workers []worker.Worker) error
+	Create(ctx context.Context, order *Order, workers []Worker) error
 	Update(ctx context.Context, order Order) error
 	UpdateWorkersAndDriver(ctx context.Context, orderId string, driverId *string, workerIds *[]string) error
 	Delete(ctx context.Context, id string) error 
@@ -41,7 +40,7 @@ func (s *service) GetWorkers(ctx context.Context, orderId string) ([]string, err
 	return s.repo.GetWorkers(ctx, orderId)
 }
 
-func (s *service) Create(ctx context.Context, order *Order, workers []worker.Worker) error {
+func (s *service) Create(ctx context.Context, order *Order, workers []Worker) error {
 	return s.repo.Create(ctx, order, workers)
 }
 

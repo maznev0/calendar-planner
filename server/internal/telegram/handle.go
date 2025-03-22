@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"fmt"
+	"regexp"
 	"server/pkg/logging"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ func handleNewOrder(order OrderPayload, logger *logging.Logger) {
 func handleCallback(bot *tgBotApi.BotAPI, update tgBotApi.Update, logger *logging.Logger) {
     callbackData := update.CallbackQuery.Data
     chatId := update.CallbackQuery.Message.Chat.ID
+    messageId := update.CallbackQuery.Message.MessageID
 
     parts := strings.Split(callbackData, ":")
     if len(parts) < 2 {
@@ -49,9 +51,12 @@ func handleCallback(bot *tgBotApi.BotAPI, update tgBotApi.Update, logger *loggin
         orderCalcState[chatId] = fmt.Sprintf("%s|%s", orderId, driverId)
         logger.Infof("Заказ %s (driver_id: %s) привязан к chat_id %d", orderId, driverId, chatId)
 
-		msg := tgBotApi.NewMessage(chatId, "Заполните форму расчета\\.\n\nДля этого нажмите на текст ниже, чтобы его скопировать, и вставьте его в поле ввода сообщения и отформатируйте нужные поля\\.\n\n```\nОбщий расчет: 0\nЗарплата исполнителям: 0,0\nДоставка: 0\nКоличество лака: 0\nРасходы: 0```\n\nЗарплату исполнителям вводить в том же порядке, как и в сообщении заказа, ставя запятые между суммами без пробелов\\.\nПример:\nЗарплата исполнителям: 100,120")
+		msg := tgBotApi.NewMessage(chatId, "Заполните форму расчета\\.\n\nДля этого нажмите на текст ниже, чтобы его скопировать, и вставьте его в поле ввода сообщения и отформатируйте нужные поля\\.\n\n```\nОбщий расчет: \nЗарплата исполнителям: \nДоставка: \nМетраж: \nЦена за метр: \nКоличество лака: 0\nРасходы: 0```")
         msg.ParseMode = "MarkdownV2"
         bot.Send(msg)
+
+        editMsg := tgBotApi.NewEditMessageText(chatId, messageId, update.CallbackQuery.Message.Text)
+        bot.Send(editMsg)
     }
 }
 
@@ -61,7 +66,7 @@ func handleMessage(bot *tgBotApi.BotAPI, update tgBotApi.Update, logger *logging
 
     data, ok := orderCalcState[chatId]
     if !ok {
-        bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Нет активного заказа для расчета."))
+        bot.Send(tgBotApi.NewMessage(chatId, "Ожидайте"))
         return
     }
 
@@ -74,39 +79,46 @@ func handleMessage(bot *tgBotApi.BotAPI, update tgBotApi.Update, logger *logging
     orderId := partsData[0]
     driverId := partsData[1]
 
-    workerIDs, ok := orderWorkersMap[orderId]
-    if !ok {
-        bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Рабочие для заказа не найдены."))
-        return
-    }
-
+    workerIDs := orderWorkersMap[orderId]
     logger.Infof("Рабочие для заказа %s: %v", orderId, workerIDs)
 
     lines := strings.Split(text, "\n")
-    if len(lines) < 5 {
-        bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Введите все 5 строк данных."))
+    if len(lines) < 7 {
+        bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Введите все 7 строк данных."))
         return
     }
 
     workerPaymentsStr := strings.TrimPrefix(lines[1], "Зарплата исполнителям: ")
-    workerPayments := strings.Split(strings.TrimSpace(workerPaymentsStr), ",")
-
-    if len(workerIDs) != len(workerPayments) {
-        bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Количество выплат не совпадает с числом рабочих."))
-        return
-    }
+    workerPaymentsStr = strings.TrimSpace(workerPaymentsStr)
 
     var workersPayments []Worker
-    for i, workerID := range workerIDs {
-        payment, err := strconv.Atoi(strings.TrimSpace(workerPayments[i]))
-        if err != nil {
-            bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Некорректный формат выплат."))
-            return
+    if len(workerIDs) > 0 {
+        if strings.Contains(workerPaymentsStr, ",") {
+            workerPayments := strings.Split(workerPaymentsStr, ",")
+            if len(workerIDs) != len(workerPayments) {
+                bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Количество выплат не совпадает с числом рабочих."))
+                return
+            }
+
+            for i, workerID := range workerIDs {
+                payment, err := strconv.Atoi(strings.TrimSpace(workerPayments[i]))
+                if err != nil {
+                    bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Некорректный формат выплат."))
+                    return
+                }
+                workersPayments = append(workersPayments, Worker{WorkerId: workerID, WorkerPayment: payment})
+            }
+        } else {
+            totalPayment, err := strconv.Atoi(workerPaymentsStr)
+            if err != nil {
+                bot.Send(tgBotApi.NewMessage(chatId, "Ошибка: Некорректный формат выплат."))
+                return
+            }
+            perWorkerPayment := totalPayment / len(workerIDs)
+            for _, workerID := range workerIDs {
+                workersPayments = append(workersPayments, Worker{WorkerId: workerID, WorkerPayment: perWorkerPayment})
+            }
         }
-        workersPayments = append(workersPayments, Worker{
-            WorkerId:      workerID,
-            WorkerPayment: payment,
-        })
     }
 
     paymentData := Payment{
@@ -114,8 +126,10 @@ func handleMessage(bot *tgBotApi.BotAPI, update tgBotApi.Update, logger *logging
         DriverId:       driverId,
         TotalPrice:     parseInt(lines[0], "Общий расчет: "),
         DriverPrice:    parseInt(lines[2], "Доставка: "),
-        OtherPrice:     parseInt(lines[4], "Расходы: "),
-        Polish:         parseInt(lines[3], "Количество лака: "),
+        Meters:         parseFloat(lines[3], "Метраж: "),
+        Price:          parseInt(lines[4], "Цена за метр: "),
+        Polish:         parseInt(lines[5], "Количество лака: "),
+        OtherPrice:     parseInt(lines[6], "Расходы: "),
         WorkersPayments: workersPayments,
     }
 
@@ -141,6 +155,19 @@ func handleUpdate(bot *tgBotApi.BotAPI, update tgBotApi.Update, logger *logging.
 func parseInt(line, prefix string) int {
     trimmed := strings.TrimPrefix(line, prefix)
     trimmed = strings.TrimSpace(trimmed)
-    num, _ := strconv.Atoi(trimmed)
+
+    re := regexp.MustCompile(`\d+`)
+    match := re.FindString(trimmed) 
+    num, _ := strconv.Atoi(match)
     return num
+}
+
+func parseFloat(line, prefix string) float32 {
+    trimmed := strings.TrimPrefix(line, prefix)
+    trimmed = strings.TrimSpace(trimmed)
+
+    re := regexp.MustCompile(`\d+(\.\d+)?`)
+    match := re.FindString(trimmed)
+    value, _ := strconv.ParseFloat(match, 32)
+    return float32(value)
 }

@@ -4,6 +4,8 @@ import {
   ScrollView,
   RefreshControl,
   FlatList,
+  TouchableOpacity,
+  Image,
 } from "react-native";
 import Day from "../../../components/Day";
 import Header from "../../../components/Header";
@@ -23,7 +25,8 @@ import {
   OrderQuantityResponse,
 } from "../../../types/order";
 import Text from "../../../components/Text";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Loader from "../../../components/Loader";
 
 export default function Home() {
   const { date } = useLocalSearchParams<{ date: string }>();
@@ -40,20 +43,9 @@ export default function Home() {
     [data, date]
   );
 
-  // const [refreshing, setRefreshing] = useState(false);
-
   const handleHeaderPress = () => {
-    // if (!router.canGoBack()) return;
-    // router.dismissAll();
     router.replace(`/week/${formatDate(new Date())}`);
   };
-
-  // const onRefresh = async () => {
-  //   setRefreshing(true);
-  //   const data = await getStartEndWeekDates(selectedDate);
-  //   week = getWeekByDate(data, selectedDate);
-  //   setRefreshing(false);
-  // };
 
   const handleSwipe = (direction: "left" | "right") => {
     const newDate = new Date(selectedDate);
@@ -62,55 +54,70 @@ export default function Home() {
       newDate.setDate(newDate.getDate() + 7);
       router.replace({
         pathname: `/week/${formatDate(newDate)}`,
-        // animation: "slide_from_left",
       });
     } else if (direction === "right") {
       newDate.setDate(newDate.getDate() - 7);
       router.replace(`/week/${formatDate(newDate)}`);
     }
+  };
 
-    // const newDateString = formatDate(newDate);
-    // router.push(`/week/${newDateString}`);
+  const handleStatistics = () => {
+    router.push(`/week/${date}/statistics`);
   };
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, backgroundColor: "#3C3C3C" }}>
-        <Text>Loading...</Text>
-      </View>
-    );
+    return <Loader />;
   }
 
   return (
-    <View style={styles.container}>
-      <Header onPress={handleHeaderPress}>
-        {getDayOfWeek(formatDate(new Date())) +
-          " " +
-          formatDayMonthUIDate(formatDate(new Date()))}
-      </Header>
+    <>
+      <View style={styles.container}>
+        <View style={styles.navbar}>
+          <TouchableOpacity onPress={() => router.push("/calendar")}>
+            <Image
+              style={styles.icon}
+              source={require("../../../assets/icons/calendar.png")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/settings")}>
+            <Image
+              style={styles.icon}
+              source={require("../../../assets/icons/menu.png")}
+            />
+          </TouchableOpacity>
+        </View>
+        <Header onPress={handleHeaderPress}>
+          {getDayOfWeek(formatDate(new Date())) +
+            " " +
+            formatDayMonthUIDate(formatDate(new Date()))}
+        </Header>
 
-      <ScrollView
-        horizontal
-        style={{ width: "100%" }}
-        onMomentumScrollBegin={(event) => {
-          const offsetX = event.nativeEvent.contentOffset.x;
-          const threshold = 60;
+        <ScrollView
+          horizontal
+          style={{
+            width: "100%",
+          }}
+          contentContainerStyle={{ width: "100%" }}
+          onMomentumScrollBegin={(event) => {
+            const offsetX = event.nativeEvent.contentOffset.x;
+            const threshold = 60;
 
-          if (offsetX > threshold) {
-            handleSwipe("left"); // Свайп влево
-          } else if (offsetX < -threshold) {
-            handleSwipe("right"); // Свайп вправо
-          }
-        }}
-      >
-        <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-          {week.map(({ date, orders_quantity }) => (
-            <Day key={date} dayDate={date} orders={orders_quantity} />
-          ))}
-          <Button onPress={() => {}}>Статистика</Button>
+            if (offsetX > threshold) {
+              handleSwipe("left");
+            } else if (offsetX < -threshold) {
+              handleSwipe("right");
+            }
+          }}
+        >
+          <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
+            {week.map(({ date, orders_quantity }) => (
+              <Day key={date} dayDate={date} orders={orders_quantity} />
+            ))}
+            <Button onPress={handleStatistics}>Статистика</Button>
+          </ScrollView>
         </ScrollView>
-      </ScrollView>
-    </View>
+      </View>
+    </>
   );
 }
 {
@@ -123,19 +130,23 @@ const styles = StyleSheet.create({
     paddingBottom: 15,
     paddingHorizontal: 20,
   },
+  header: {
+    paddingHorizontal: 20,
+  },
+  navbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingTop: 10,
+    backgroundColor: "#3C3C3C",
+  },
+  icon: {
+    width: 40,
+    height: 40,
+  },
   list: {
-    // width: "100%",
-    width: 385,
+    width: "100%",
     height: "100%",
     flex: 1,
     paddingVertical: 15,
-    // borderWidth: 1,
-    // borderColor: "#FFF",
   },
 });
-
-function addWeeks(date: Date, weeks: number): Date {
-  const result = new Date(date); // Создаем копию исходной даты, чтобы не мутировать её
-  result.setDate(result.getDate() + weeks * 7); // Добавляем или вычитаем недели
-  return result;
-}

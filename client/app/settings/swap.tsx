@@ -6,9 +6,10 @@ import { getDriversWithCar, swapCars } from "../../api/order";
 import Text from "../../components/Text";
 import useFetch from "../../hooks/useFetch";
 import { router } from "expo-router";
+import Loader from "../../components/Loader";
 
 export default function Swap() {
-  const { data } = useFetch(getDriversWithCar);
+  const { data, isLoading } = useFetch(getDriversWithCar);
 
   const [driver1, setDriver1] = useState<string>("");
   const [driver2, setDriver2] = useState<string>("");
@@ -40,6 +41,8 @@ export default function Swap() {
     await swapCars(driver1, driver2);
     router.back();
   };
+
+  if (isLoading) return <Loader />;
 
   return (
     <View style={styles.container}>

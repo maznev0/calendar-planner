@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"server/internal/handlers"
-	"server/internal/worker"
 	"server/pkg/logging"
 
 	"github.com/julienschmidt/httprouter"
@@ -40,7 +39,7 @@ func (h *handler) Register(router *httprouter.Router) {
 func (h *handler) Create(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	var request struct {
 		Order   Order          `json:"order" binding:"required"`
-		Workers []worker.Worker `json:"workers"`
+		Workers []Worker `json:"workers"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
@@ -206,7 +205,7 @@ func (h *handler) SendOrder(w http.ResponseWriter, r *http.Request, _ httprouter
 			OrderDate    string  `json:"order_date"`
 			OrderAddress string  `json:"order_address"`
 			PhoneNumber  string  `json:"phone_number"`
-			Meters       int     `json:"meters"`
+			Meters       float32     `json:"meters"`
 			Price        int     `json:"price"`
 			ChatId       int64   `json:"chat_id"`
 			Note         string  `json:"note"`

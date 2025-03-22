@@ -16,10 +16,10 @@ export default function Layout() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <View style={styles.navbar}>
-            <TouchableOpacity onPress={() => router.push("/calendar")}>
+            <TouchableOpacity onPress={() => router.back()}>
               <Image
                 style={styles.icon}
-                source={require("../../assets/icons/calendar.png")}
+                source={require("../../assets/icons/back.png")}
               />
             </TouchableOpacity>
             {/* <TouchableOpacity onPress={() => router.push("/settings")}>

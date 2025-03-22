@@ -48,7 +48,10 @@ function OrderCard({ order }: Props) {
   return (
     <TouchableOpacity
       onPress={() => router.push(`/week/${date}/day/${dayDate}/order/${id}`)}
-      style={styles.container}
+      style={[
+        styles.container,
+        { backgroundColor: order_state === "Готов" ? "#2C2C2C" : "#252525" },
+      ]}
     >
       <View style={styles.top}>
         <Text style={styles.address_text}>📍 {order_address}</Text>
@@ -84,7 +87,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: 158,
-    backgroundColor: "#252525",
     borderRadius: 20,
 
     paddingHorizontal: 10,

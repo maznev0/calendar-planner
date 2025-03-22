@@ -6,6 +6,7 @@ import { SelectList } from "react-native-dropdown-select-list";
 import Button from "../../components/Button";
 import { addCar, getDriversWithoutCar } from "../../api/order";
 import useFetch from "../../hooks/useFetch";
+import Loader from "../../components/Loader";
 
 const COLORS = [
   "#006DEA",
@@ -19,7 +20,7 @@ const COLORS = [
 ];
 
 export default function AddCarPage() {
-  const { data } = useFetch(getDriversWithoutCar);
+  const { data, isLoading } = useFetch(getDriversWithoutCar);
 
   const router = useRouter();
 
@@ -61,6 +62,8 @@ export default function AddCarPage() {
     await addCar(carFetch);
     router.back();
   };
+
+  if (isLoading) return <Loader />;
 
   return (
     <View style={styles.container}>

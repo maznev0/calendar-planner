@@ -27,6 +27,7 @@ import SelectInput from "../../../../../../../../components/SelectInput";
 import MultipleSelectInput from "../../../../../../../../components/MultipleSelectInput";
 import { WorkersDriversResponse } from "../../../../../../../../types/users";
 import { DayDateParams } from "../../../../../../../../types/date";
+import Loader from "../../../../../../../../components/Loader";
 
 const Set = () => {
   const { date, dayDate, orderId, driver } = useLocalSearchParams<{
@@ -73,7 +74,7 @@ const Set = () => {
   };
 
   if (isLoading) {
-    return <Text>LOADING ...</Text>;
+    return <Loader />;
   }
 
   return (

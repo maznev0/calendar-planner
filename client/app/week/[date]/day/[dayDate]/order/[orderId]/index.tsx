@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
 } from "react-native";
 import React from "react";
 import Header from "../../../../../../../components/Header";
@@ -21,10 +22,12 @@ import {
 } from "../../../../../../../api/order";
 import Notes from "../../../../../../../components/Notes";
 import {
+  formatDate,
   formatDayMonthUIDate,
   getDayOfWeek,
 } from "../../../../../../../utils/date";
 import Payment from "../../../../../../../components/Payment";
+import Loader from "../../../../../../../components/Loader";
 
 export default function OrderPage() {
   const { date, dayDate, orderId } = useLocalSearchParams<{
@@ -39,15 +42,18 @@ export default function OrderPage() {
   );
 
   const handleSendToDriver = async () => {
-    console.log(data!.order);
     const fetchWorkers = data?.workers
       ? data!.workers.map((w) => ({
           worker_id: w.worker_id,
           workername: w.workername,
         }))
       : null;
+    const [year, month, day] = data!.order.order_date.split("-");
+
+    const newDateStr = `${day}-${month}-${year}`;
+
     await sendOrderToDriver({
-      order: data!.order,
+      order: { ...data!.order, order_date: newDateStr },
       workers: fetchWorkers,
     });
 
@@ -57,26 +63,62 @@ export default function OrderPage() {
   };
 
   const handleDelete = async () => {
-    if (data?.order.id) {
-      await deleteOrder(data?.order.id);
-      router.back();
-      router.back();
-      if (router.canGoBack()) router.back();
-      router.push(`/week/${date}`);
-      router.push(`/week/${date}/day/${dayDate}`);
-    }
+    await Alert.alert(
+      "Подтверждение",
+      "Вы уверены, что хотите удалить заказ?",
+      [
+        {
+          text: "Нет",
+          onPress: () => {},
+          style: "cancel",
+        },
+        {
+          text: "Да",
+          onPress: async () => {
+            if (data?.order.id) {
+              await deleteOrder(data?.order.id);
+              router.back();
+              router.back();
+              router.replace(`/week/${date}`);
+              router.push(`/week/${date}/day/${dayDate}`);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  const handleDone = async () => {
+    const doneOrder = {
+      id: data!.order.id,
+      price: data!.order.price,
+      meters: data!.order.meters,
+      order_date: data!.order.order_date,
+      order_address: data!.order.order_address,
+      phone_number: data!.order.phone_number,
+      note: data!.order.note,
+      order_state: "Готов",
+    };
+    await updateOrder(doneOrder);
+    router.back();
+    router.back();
+    router.push(`/week/${date}/day/${dayDate}`);
+  };
+  const handleHeaderPress = () => {
+    router.replace(`/week/${formatDate(new Date())}`);
   };
 
   if (isLoading) {
-    return <Text>LOADING ...</Text>;
+    return <Loader />;
   }
 
   return (
     <View style={styles.container}>
-      <Header>
+      <Header onPress={handleHeaderPress}>
         {getDayOfWeek(dayDate) + " " + formatDayMonthUIDate(dayDate)}
       </Header>
-      <ScrollView style={styles.info}>
+      <ScrollView style={styles.info} showsVerticalScrollIndicator={false}>
         {data?.order.order_state !== "Отправлено" && (
           <View style={styles.menu}>
             {data?.order.order_state !== "Готов" && (
@@ -111,8 +153,17 @@ export default function OrderPage() {
               </Text>
             </View>
           )}
+
           {data?.order.note && data.order.note.length > 0 && (
             <Notes note={data.order.note} />
+          )}
+
+          {(!!data?.payments.total_price || !!data?.payments.driver_price) && (
+            <Payment
+              payments={data?.payments}
+              workers={data?.workers}
+              showEdit={data?.order.order_state !== "Готов"}
+            />
           )}
         </View>
       </ScrollView>
@@ -171,11 +222,9 @@ export default function OrderPage() {
             ),
 
             "Ожидает проверки": (
-              <>
-                <Button onPress={() => {}}>Изменить выплаты</Button>
-
-                <Button onPress={() => {}}>Готово</Button>
-              </>
+              <Button color="#4EDC3E" onPress={handleDone}>
+                Готов
+              </Button>
             ),
             Отправлено: <></>,
             Готов: <></>,
@@ -215,6 +264,8 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     gap: 9,
+
+    marginBottom: 5,
   },
   workers: {
     width: "100%",
@@ -234,5 +285,6 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "column",
     gap: 10,
+    paddingTop: 5,
   },
 });

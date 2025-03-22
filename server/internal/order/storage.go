@@ -2,14 +2,13 @@ package order
 
 import (
 	"context"
-	"server/internal/worker"
 	"server/pkg/logging"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Repository interface {
-	Create(ctx context.Context, order *Order, workers []worker.Worker) error
+	Create(ctx context.Context, order *Order, workers []Worker) error
 	//GetAll(ctx context.Context) (orders []Order, err error)
 	GetQuantityByDates(ctx context.Context, startDate, endDate string) ([]Date, error)
 	GetOrdersByDate(ctx context.Context, date string) ([]OrderWithDetails, error)
@@ -33,7 +32,7 @@ func NewRepository(db *pgxpool.Pool, logger *logging.Logger) Repository {
 	}
 }
 
-func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers []worker.Worker) error {
+func (r *PostgresRepository) Create(ctx context.Context, order *Order, workers []Worker) error {
 	tx, err := r.db.Begin(ctx)
 	if err != nil {
 		return err
@@ -296,9 +295,9 @@ func (r *PostgresRepository) GetById(ctx context.Context, id string) (Order, []W
 	}
 
 	// Получение платежей
-	queryPayments := `SELECT total_price, driver_price, other_price FROM payments WHERE order_id = $1`
+	queryPayments := `SELECT total_price, driver_price, other_price, polish, profit FROM payments WHERE order_id = $1`
 	row = r.db.QueryRow(ctx, queryPayments, id)
-	if err := row.Scan(&payments.TotalPrice, &payments.DriverPrice, &payments.OtherPrice); err != nil {
+	if err := row.Scan(&payments.TotalPrice, &payments.DriverPrice, &payments.OtherPrice, &payments.Polish, &payments.Profit); err != nil {
 		if err.Error() == "no rows in result set" {
 			payments = Payments{}
 		} else {

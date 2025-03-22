@@ -99,4 +99,6 @@ export interface Payments {
   total_price: number;
   driver_price: number;
   other_price: number;
+  polish: number;
+  profit: number;
 }

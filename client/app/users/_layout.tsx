@@ -16,18 +16,15 @@ export default function Layout() {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <View style={styles.navbar}>
-            <TouchableOpacity onPress={() => router.push("/calendar")}>
+            <TouchableOpacity onPress={() => router.back()}>
               <Image
                 style={styles.icon}
-                source={require("../../assets/icons/calendar.png")}
+                source={require("../../assets/icons/back.png")}
               />
             </TouchableOpacity>
-            {/* <TouchableOpacity onPress={() => router.push("/settings")}>
-              <Image source={require("../../assets/icons/menu.png")} />
-            </TouchableOpacity> */}
           </View>
           <View style={styles.date}>
-            <Text style={styles.date_text}>Пользователи</Text>
+            <Text style={styles.date_text}>Настройки</Text>
           </View>
         </View>
         <Stack screenOptions={{ headerShown: false }} />

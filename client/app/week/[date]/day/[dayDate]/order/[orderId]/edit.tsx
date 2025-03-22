@@ -24,6 +24,7 @@ import {
   getDayOfWeek,
 } from "../../../../../../../utils/date";
 import Text from "../../../../../../../components/Text";
+import Loader from "../../../../../../../components/Loader";
 
 const Edit = () => {
   const { date, dayDate, orderId } = useLocalSearchParams<{
@@ -109,7 +110,7 @@ const Edit = () => {
   };
 
   if (isLoading) {
-    return <Text>LOADING ...</Text>;
+    return <Loader />;
   }
 
   return (

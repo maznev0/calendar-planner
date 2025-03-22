@@ -17,8 +17,8 @@ type Config struct {
 	} `yaml:"listen"`
 
 	Database DBConfig `yaml:"database"`
-
-	Telegram TGConfig 
+	TLS      TLSConfig `yaml:"tls"`
+	Telegram TGConfig `yaml:"telegram"`
 }
 
 type DBConfig struct {
@@ -26,9 +26,14 @@ type DBConfig struct {
 	Port     string `yaml:"port" env-default:"5432"`
 	Name     string `yaml:"name" env-default:"postgres"`
 	SSLMode  string `yaml:"sslmode" env-default:"disable"`
-	User     string `env:"DB_USER"`     
+	User     string `env:"DB_USER"`
 	Password string `env:"DB_PASSWORD"`
 } 
+
+type TLSConfig struct {
+	CertFile string `yaml:"cert_file" env:"TLS_CERT_FILE"`
+	KeyFile  string `yaml:"key_file" env:"TLS_KEY_FILE"`
+}
 
 type TGConfig struct {
 	Token string `env:"TG_BOT_TOKEN"`
@@ -54,8 +59,8 @@ func GetConfig() *Config {
 		}
 
 		if err := cleanenv.ReadEnv(instance); err != nil {
-            logger.Fatal(err)
-        }
+			logger.Fatal(err)
+		}
 	})
 	return instance
 }

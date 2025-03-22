@@ -19,8 +19,11 @@ import {
   Payments,
 } from "../types/order";
 import { DayDateParams } from "../types/date";
+import Constants from "expo-constants";
 
-const BASE_URL = "172.20.10.7";
+const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
+// console.log(BASE_URL);
+// const BASE_URL = "100.78.75.180";
 
 export const getAllUsers = async (): Promise<UsersResponse> => {
   try {
@@ -96,6 +99,21 @@ export const createUser = async (user: UserFetch) => {
 export const updateOrder = async (order: IOrderUpdate) => {
   try {
     await axios.post(`http://${BASE_URL}:10000/orders/update`, order, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    //Alert.alert("Успех", "Заказ успешно отправлен!");
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
+  }
+};
+
+export const updatePayments = async (payments) => {
+  try {
+    await axios.post(`http://${BASE_URL}:10000/payments/update`, payments, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -222,6 +240,26 @@ export const getOrdersQuantity = async (
   } catch (err: any) {
     Alert.alert("Ошибка", err.message);
     return [] as OrderQuantityResponse;
+  }
+};
+
+export const getWeekStatistics = async (params?: OrderQuantityParams) => {
+  const { start, end } = params || {};
+  try {
+    const response = await axios.get(
+      `http://${BASE_URL}:10000/payments/statistics/week?start=${start}&end=${end}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    // Alert.alert("Успех", "Заказы на неделю пришли!");
+
+    return response.data;
+  } catch (err: any) {
+    Alert.alert("Ошибка", err.message);
   }
 };
 

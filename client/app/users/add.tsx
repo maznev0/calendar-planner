@@ -16,10 +16,6 @@ const ROLES = [
     key: "worker",
     value: "Рабочий",
   },
-  {
-    key: "admin",
-    value: "Администратор",
-  },
 ];
 
 export default function Users() {
@@ -109,7 +105,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: 0,
     margin: 0,
-    paddingLeft: 12,
+    paddingLeft: 25,
   },
   inputStyles: {
     fontSize: 20,
@@ -124,7 +120,7 @@ const styles = StyleSheet.create({
   },
   dropdownStyles: {
     width: "100%",
-    height: 170,
+    height: 120,
     backgroundColor: "#252525",
     borderRadius: 20,
     zIndex: 50,

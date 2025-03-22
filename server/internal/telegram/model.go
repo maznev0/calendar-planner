@@ -23,6 +23,8 @@ type Payment struct {
     DriverId string `json:"driver_id"`
 	TotalPrice int `json:"total_price"`
 	DriverPrice int `json:"driver_price"`
+	Meters float32 `json:"meters"`
+	Price int `json:"price"`
 	OtherPrice int `json:"other_price"`
 	Polish int `json:"polish"`
 	WorkersPayments []Worker `json:"workers_payments"`

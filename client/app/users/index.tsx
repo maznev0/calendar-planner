@@ -5,11 +5,12 @@ import WorkerItem from "../../components/WorkerItem";
 import useFetch from "../../hooks/useFetch";
 import { getAllUsers } from "../../api/order";
 import Text from "../../components/Text";
+import Loader from "../../components/Loader";
 
 export default function Users() {
   const { isLoading, data } = useFetch(getAllUsers);
 
-  if (isLoading) return <Text>Loading ...</Text>;
+  if (isLoading) return <Loader />;
 
   return (
     <View style={styles.container}>

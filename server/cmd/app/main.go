@@ -2,14 +2,19 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
 	"server/internal/car"
 	"server/internal/config"
 	"server/internal/order"
 	"server/internal/payments"
 	"server/internal/user"
+	"server/middleware"
 	"server/pkg/database"
 	"server/pkg/logging"
 	"server/pkg/server"
+	"syscall"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/nats-io/nats.go"
@@ -26,7 +31,7 @@ func main() {
 
 	c := cors.New(cors.Options{
         AllowedOrigins:   []string{"*"},
-        AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE"},
+        AllowedMethods:   []string{"GET", "POST", "DELETE"},
         AllowedHeaders:   []string{"Content-Type"},
         AllowCredentials: true,
     })
@@ -36,7 +41,10 @@ func main() {
 	if err != nil {
 		logger.Fatalf("%v", err)
 	}
+
+	defer pool.Close()
 	//
+
 	// creating Nats Connection
 	natsConn, err := nats.Connect(nats.DefaultURL)
 	if err != nil {
@@ -69,21 +77,43 @@ func main() {
 	handlerCar := car.NewHandler(logger, serviceCar)
 	handlerCar.Register(router)
 
-	handler := c.Handler(router)
+	handler := middleware.AuthMiddleware(c.Handler(router))
+	
+	serverInstance := server.NewServer(handler, cfg)
+	go serverInstance.Start()
 
-	server.Start(handler, cfg)
+	// Creating backup one time for a week
+	go func() {
+		for {
+			logger.Info("Starting weekly database backup...")
+			if err := database.BackupDatabase(cfg.Database, logger); err != nil {
+				logger.Errorf("Error during weekly backup: %v", err)
+			} else {
+				logger.Info("Weekly backup successfully created.")
+			}
+			time.Sleep(7 * 24 * time.Hour)
+		}
+	}()
 
-	// quit := make(chan os.Signal, 1)
-	// signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-	// <-quit
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
 
-	// logger.Print("TodoApp Shutting Down")
+	logger.Print("Server Shutting Down")
 
-	// if err := server.Stop(context.Background()); err != nil {
-	// 	logger.Errorf("error occured on server shutting down: %s", err.Error())
-	// }
+	logger.Info("Creating backup before shutting down server.")
+	if err := database.BackupDatabase(cfg.Database, logger); err != nil {
+		logger.Errorf("Failed to create backup before shutting down server, error: %v", err)
+	} else {
+		logger.Info("Backup successfully created before shutting down server.")
+	}
 
-	// if err := db.Close(); err != nil {
-	// 	logger.Errorf("error occured on db connection close: %s", err.Error())
-	// }
+	ctx, cancel := context.WithTimeout(context.Background(), serverInstance.ShutdownTimeout)
+	defer cancel()
+
+	if err := serverInstance.Stop(ctx); err != nil {
+		logger.Errorf("Error occurred on server shutting down: %v", err)
+	}
 }
+
+

@@ -24,8 +24,6 @@ import {
   getDayOfWeek,
 } from "../../../../../../utils/date";
 
-type DATE = string;
-
 const Add = () => {
   const { date, dayDate } = useLocalSearchParams<{
     date: string;
@@ -103,7 +101,6 @@ const Add = () => {
         })),
       ],
     };
-    // router.push(`/week/${date}/day/${dayDate}`);
     await addOrder(fetchOrder);
     router.dismissAll();
     router.push(`/week/${date}`);

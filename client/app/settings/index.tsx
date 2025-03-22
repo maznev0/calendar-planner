@@ -9,7 +9,7 @@ export default function Settings() {
         <View style={styles.item}>
           <Image
             style={styles.icon}
-            source={require("../../assets/icons/statistics.png")}
+            source={require("../../assets/icons/add-user.png")}
           />
           <Text style={styles.item_text}>Добавить пользователя</Text>
         </View>
@@ -27,7 +27,7 @@ export default function Settings() {
         <View style={styles.item}>
           <Image
             style={styles.icon}
-            source={require("../../assets/icons/users.png")}
+            source={require("../../assets/icons/truck.png")}
           />
           <Text style={styles.item_text}>Добавить машину</Text>
         </View>
@@ -36,7 +36,7 @@ export default function Settings() {
         <View style={styles.item}>
           <Image
             style={styles.icon}
-            source={require("../../assets/icons/users.png")}
+            source={require("../../assets/icons/change.png")}
           />
           <Text style={styles.item_text}>Пересадить водителей</Text>
         </View>
@@ -61,10 +61,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-  icon: {},
+  icon: {
+    width: 75,
+    height: 75,
+  },
   item_text: {
     fontSize: 20,
     color: "#FFF",
-    fontWeight: 200,
+    fontWeight: 300,
   },
 });

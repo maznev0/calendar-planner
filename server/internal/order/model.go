@@ -20,6 +20,7 @@ type Payments struct {
 	DriverPrice int `json:"driver_price" binding:"required"`
 	OtherPrice  int `json:"other_price" binding:"required"`
 	Polish 		int `json:"polish" binding:"required"`
+	Profit 		int `json:"profit" binding:"required"`
 }
 
 type Worker struct {
