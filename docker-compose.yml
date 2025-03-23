@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  front:
+    image: odamisheker/images:front
+    container_name: front
+    ports:
+    - "1-65536:1-65536"
+    networks:
+      - default
+  back:
+    image: odamisheker/images:back
+    container_name: back
+    ports:
+    - "1-65536:1-65536"
+    volumes:
+      - /var/log:/app/logs
+    networks:
+      - default
+  db:
+    image: postgres:17
+    container_name: db
+    ports:
+    - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=27ecJ3ieP
+    networks:
+      - default
+
+volumes:
+  pgdata: {}
+
+networks:
+  default:
+    driver: bridge
