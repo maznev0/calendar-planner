@@ -1,14 +1,14 @@
 version: '3.8'
 services:
   front:
-    image: odamisheker/images:front
+    # image: odamisheker/images:front
     container_name: front
     ports:
     - "1-65536:1-65536"
     networks:
       - default
   back:
-    image: odamisheker/images:back
+    # image: odamisheker/images:back
     container_name: back
     ports:
     - "1-65536:1-65536"
