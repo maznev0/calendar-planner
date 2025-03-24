@@ -28,7 +28,10 @@ export default {
   },
   plugins: ["expo-router"],
   extra: {
-    apiUrl: process.env.SERVER_URL,
+    apiUrl: process.env.SERVER_URL || "192.168.100.188",
+    apiKey: process.env.API_KEY || "YJLz16jm3BnJS2CpXSOGSPpefI27TvR9dd6bDFh2",
+    secretKey:
+      process.env.SECRET_KEY || "bYK4eqVyPctRZHmfFpE4aUqj6TvnRUisNzpvOSgH",
     router: {
       origin: false,
     },

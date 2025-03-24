@@ -17,6 +17,9 @@ func verifySignature(message, receivedSignature string) bool {
 	h := hmac.New(sha256.New, []byte(os.Getenv("SECRET_KEY")))
 	h.Write([]byte(message))
 	computedSignature := hex.EncodeToString(h.Sum(nil))
+	fmt.Println("Message:", message)
+	fmt.Println("Received Signature:", receivedSignature)
+	fmt.Println("Computed Signature:", computedSignature)
 	return hmac.Equal([]byte(computedSignature), []byte(receivedSignature))
 }
 
@@ -43,7 +46,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			http.Error(w, "Failed to read request body", http.StatusBadRequest)
 			return
 		}
-		defer r.Body.Close()
+		defer r.Body.Close() 
 
 		message := fmt.Sprintf("%s%s%s%s", r.Method, r.URL.Path, string(body), timestamp)
 

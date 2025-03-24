@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Alert } from "react-native";
+import CryptoJS from "crypto-js";
 import {
   UserFetch,
   UsersResponse,
@@ -24,6 +25,35 @@ import Constants from "expo-constants";
 const BASE_URL = Constants?.expoConfig?.extra?.apiUrl;
 // console.log(BASE_URL);
 // const BASE_URL = "100.78.75.180";
+
+const generateSignature = async (
+  method: string,
+  path: string,
+  body: string,
+  timestamp: string
+): Promise<string> => {
+  try {
+    const secretKey = Constants?.expoConfig?.extra?.secretKey;
+    if (!secretKey) {
+      throw new Error("API_SECRET_KEY not found in environment variables");
+    }
+
+    // Формируем сообщение для подписи
+    const message = `${method}${path}${body}${timestamp}`;
+    console.log("Message for signature:", message); // Логируем сообщение
+
+    // Генерируем HMAC-SHA256 подпись
+    const hmac = CryptoJS.HmacSHA256(message, secretKey).toString(
+      CryptoJS.enc.Hex
+    );
+    console.log("Generated signature:", hmac); // Логируем подпись
+
+    return hmac;
+  } catch (error) {
+    console.error("Error generating signature:", error);
+    throw error;
+  }
+};
 
 export const getAllUsers = async (): Promise<UsersResponse> => {
   try {
@@ -223,17 +253,34 @@ export const getOrdersByDay = async (
 export const getOrdersQuantity = async (
   params?: OrderQuantityParams
 ): Promise<OrderQuantityResponse> => {
-  const { start = "2025-03-01", end = "2025-03-07" } = params || {};
+  const { start = "2025-03-17", end = "2025-03-23" } = params || {};
   try {
+    const apiKey = Constants?.expoConfig?.extra?.apiKey;
+    if (!apiKey) {
+      throw new Error("API_KEY not found in environment variables");
+    }
+
+    const method = "GET";
+    const path = "/orders/days";
+    const body = ""; // Для GET-запроса тело пустое
+    const timestamp = Math.floor(Date.now() / 1000).toString(); // Текущее время в Unix timestamp
+
+    const signature = await generateSignature(method, path, body, timestamp);
+    console.log(timestamp);
+
     const response = await axios.get<OrderQuantityResponse>(
-      `http://${BASE_URL}:10000/orders/days?start=${start}&end=${end}`,
+      `https://10.130.0.16:8443/orders/days?start=${start}&end=${end}`,
       {
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          "X-API-KEY": apiKey,
+          "X-SIGNATURE": signature,
+          "X-TIMESTAMP": timestamp,
         },
       }
     );
+
     // Alert.alert("Успех", "Заказы на неделю пришли!");
 
     return response.data;

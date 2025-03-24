@@ -9,7 +9,9 @@
       "ios": {
         "simulator": false,
         "env": {
-          "SERVER_URL": "$SERVER_URL"
+          "SERVER_URL": "$SERVER_URL",
+          "API_KEY": "$API_KEY",
+          "SECRET_KEY": "$SECRET_KEY"
         }
       }
     },
