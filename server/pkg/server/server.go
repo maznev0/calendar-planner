@@ -12,8 +12,6 @@ import (
 type Server struct {
 	httpServer      *http.Server
 	ShutdownTimeout time.Duration
-	CertFile        string
-	KeyFile         string
 }
 
 func NewServer(handler http.Handler, cfg *config.Config) *Server {
@@ -25,8 +23,6 @@ func NewServer(handler http.Handler, cfg *config.Config) *Server {
 			ReadTimeout:  5 * time.Second,
 		},
 		ShutdownTimeout: 5 * time.Second,
-		CertFile:        cfg.TLS.CertFile,
-		KeyFile:         cfg.TLS.KeyFile,
 	}
 }
 
@@ -34,7 +30,7 @@ func (s *Server) Start() {
 	logger := logging.GetLogger()
 	logger.Info("Starting HTTPS server")
 
-	if err := s.httpServer.ListenAndServeTLS(s.CertFile, s.KeyFile); err != nil && err != http.ErrServerClosed {
+	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Fatal(err)
 	}
 }

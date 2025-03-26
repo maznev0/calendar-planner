@@ -4,24 +4,31 @@
     "appVersionSource": "remote"
   },
   "build": {
-    "production": {
-      "resourceClass": "default",
+    "preview": {
       "ios": {
+        "credentialsSource": "local",
         "simulator": false,
+        "autoIncrement": true,
         "env": {
           "SERVER_URL": "$SERVER_URL",
           "API_KEY": "$API_KEY",
           "SECRET_KEY": "$SECRET_KEY"
         }
-      }
+      },
+      "distribution": "internal"
     },
     "development": {
       "resourceClass": "default",
       "ios": {
         "simulator": true,
         "developmentClient": true,
+        "credentialsSource": "local",
+
+        "buildConfiguration": "Release",
         "env": {
-          "SERVER_URL": "$SERVER_URL"
+          "SERVER_URL": "$SERVER_URL",
+          "API_KEY": "$API_KEY",
+          "SECRET_KEY": "$SECRET_KEY"
         }
       }
     }

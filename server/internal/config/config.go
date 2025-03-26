@@ -17,7 +17,6 @@ type Config struct {
 	} `yaml:"listen"`
 
 	Database DBConfig `yaml:"database"`
-	TLS      TLSConfig `yaml:"tls"`
 	Telegram TGConfig `yaml:"telegram"`
 }
 
@@ -29,11 +28,6 @@ type DBConfig struct {
 	User     string `env:"DB_USER"`
 	Password string `env:"DB_PASSWORD"`
 } 
-
-type TLSConfig struct {
-	CertFile string `yaml:"cert_file" env:"TLS_CERT_FILE"`
-	KeyFile  string `yaml:"key_file" env:"TLS_KEY_FILE"`
-}
 
 type TGConfig struct {
 	Token string `env:"TG_BOT_TOKEN"`
